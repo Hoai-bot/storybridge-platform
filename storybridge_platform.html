@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoryBridge - Translanguaging Learning Platform for Students</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Be Vietnam Pro & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js for learning analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Be Vietnam Pro"', 'sans-serif'],
+                        heading: ['"Plus Jakarta Sans"', '"Be Vietnam Pro"', 'sans-serif'],
+                    },
+                    colors: {
+                        sage: {
+                            50: '#f4f7f5',
+                            100: '#e3ebe6',
+                            200: '#c8d8ce',
+                            500: '#528568',
+                            600: '#3f6b52',
+                            700: '#345543',
+                        },
+                        amber: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { fontFamily: 'Be Vietnam Pro', sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .l2-word {
+            display: inline-block;
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            color: #3730a3;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #a5b4fc;
+            margin: 0 2px;
+        }
+        .l2-word:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+            background: linear-gradient(135deg, #c7d2fe 0%, #a5b4fc 100%);
+        }
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="h-full text-slate-800 bg-slate-50 flex flex-col font-sans antialiased">
+
+    <!-- TOP HEADER -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-18 py-3">
+                
+                <!-- Logo & Slogan -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-sage-500 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+                        <i data-lucide="languages" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <span class="text-2xl font-bold font-heading bg-gradient-to-r from-indigo-700 via-indigo-600 to-sage-600 bg-clip-text text-transparent">StoryBridge</span>
+                        <p class="text-xs text-slate-500 font-medium hidden sm:block">Học ngôn ngữ tự nhiên qua Translanguaging</p>
+                    </div>
+                </div>
+
+                <!-- Language Selector & Controls -->
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <div class="bg-slate-100 p-1.5 rounded-xl border border-slate-200 flex items-center space-x-2">
+                        <div class="flex items-center space-x-1 pl-1">
+                            <span class="text-xs font-semibold text-slate-400">L1:</span>
+                            <select id="selectL1" onchange="changeLanguages()" class="bg-transparent text-xs font-bold text-slate-700 focus:outline-none cursor-pointer">
+                                <option value="vi">🇻🇳 Tiếng Việt</option>
+                            </select>
+                        </div>
+                        <i data-lucide="arrow-right-left" class="w-3.5 h-3.5 text-slate-400"></i>
+                        <div class="flex items-center space-x-1 pr-1">
+                            <span class="text-xs font-semibold text-slate-400">L2:</span>
+                            <select id="selectL2" onchange="changeLanguages()" class="bg-transparent text-xs font-bold text-indigo-600 focus:outline-none cursor-pointer">
+                                <option value="en">🇺🇸 Tiếng Anh</option>
+                                <option value="ko">🇰🇷 Tiếng Hàn</option>
+                                <option value="ja">🇯🇵 Tiếng Nhật</option>
+                                <option value="zh">🇨🇳 Tiếng Trung</option>
+                                <option value="fr">🇫🇷 Tiếng Pháp</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="hidden md:flex items-center space-x-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-xs font-bold shadow-sm">
+                        <i data-lucide="flame" class="w-4 h-4 text-amber-500 fill-amber-500"></i>
+                        <span>7 Ngày Streak</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code-Switching Ratio Selector Bar -->
+            <div class="py-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="sliders" class="w-4 h-4 text-indigo-600"></i>
+                    <span class="font-semibold text-slate-700">Tỷ lệ Translanguaging (Code-Switching):</span>
+                </div>
+                <div class="flex items-center space-x-2 bg-slate-100 p-1 rounded-xl w-full sm:w-auto">
+                    <button onclick="setRatio(1)" id="btnRatio1" class="ratio-btn flex-1 sm:flex-none px-3 py-1.5 rounded-lg font-medium transition-all duration-200 text-slate-600 hover:text-slate-900">
+                        🌱 Nhập môn <span class="text-[10px] opacity-75">(80% L1 + 20% L2)</span>
+                    </button>
+                    <button onclick="setRatio(2)" id="btnRatio2" class="ratio-btn flex-1 sm:flex-none px-3 py-1.5 rounded-lg font-medium transition-all duration-200 bg-indigo-600 text-white shadow-sm">
+                        🚀 Tự tin <span class="text-[10px] opacity-90">(50% L1 + 50% L2)</span>
+                    </button>
+                    <button onclick="setRatio(3)" id="btnRatio3" class="ratio-btn flex-1 sm:flex-none px-3 py-1.5 rounded-lg font-medium transition-all duration-200 text-slate-600 hover:text-slate-900">
+                        🔥 Thách thức <span class="text-[10px] opacity-75">(20% L1 + 80% L2)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVIGATION TABS -->
+    <div class="bg-white border-b border-slate-200/80 sticky top-[108px] z-30 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="flex space-x-2 sm:space-x-8 overflow-x-auto py-2 scrollbar-none" aria-label="Tabs">
+                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-tab flex items-center space-x-2 py-2 px-3 sm:px-1 rounded-lg text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600 transition-colors whitespace-nowrap">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    <span>Tổng Quan (Dashboard)</span>
+                </button>
+                <button onclick="switchTab('reader')" id="tab-reader" class="nav-tab flex items-center space-x-2 py-2 px-3 sm:px-1 rounded-lg text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-indigo-600 transition-colors whitespace-nowrap">
+                    <i data-lucide="book-open" class="w-4 h-4"></i>
+                    <span>Thư Viện & Bài Đọc</span>
+                </button>
+                <button onclick="switchTab('journal')" id="tab-journal" class="nav-tab flex items-center space-x-2 py-2 px-3 sm:px-1 rounded-lg text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-indigo-600 transition-colors whitespace-nowrap">
+                    <i data-lucide="pen-tool" class="w-4 h-4"></i>
+                    <span>Nhật Ký & AI Assist</span>
+                </button>
+                <button onclick="switchTab('practice')" id="tab-practice" class="nav-tab flex items-center space-x-2 py-2 px-3 sm:px-1 rounded-lg text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-indigo-600 transition-colors whitespace-nowrap">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    <span>Thẻ Từ & Mini Game</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- TAB 1: DASHBOARD -->
+        <section id="view-dashboard" class="space-y-6">
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-sage-700 text-white p-6 sm:p-8 shadow-xl">
+                <div class="relative z-10 max-w-2xl">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-indigo-200 text-xs font-semibold mb-3 border border-white/10">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                        <span>Phương Pháp Học Translanguaging</span>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold font-heading mb-2">Chào mừng trở lại! 👋</h1>
+                    <p class="text-indigo-100 text-sm sm:text-base leading-relaxed mb-6">
+                        Đừng lo lắng về việc nói sai hay phải dịch từng từ! Bằng cách pha trộn ngôn ngữ <span class="text-amber-300 font-semibold" id="dashL1Text">Tiếng Việt</span> & <span class="text-amber-300 font-semibold" id="dashL2Text">Tiếng Anh</span> một cách tự nhiên, não bộ bạn sẽ ghi nhớ nhanh hơn 300%.
+                    </p>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="switchTab('reader')" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center space-x-2 text-sm">
+                            <i data-lucide="play" class="w-4 h-4 fill-slate-900"></i>
+                            <span>Đọc Truyện Ngay</span>
+                        </button>
+                        <button onclick="switchTab('journal')" class="px-5 py-2.5 bg-white/15 hover:bg-white/25 text-white font-semibold rounded-xl backdrop-blur-md transition-all text-sm flex items-center space-x-2">
+                            <i data-lucide="edit-3" class="w-4 h-4"></i>
+                            <span>Viết Nhật Ký Đa Ngữ</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute right-20 top-0 w-48 h-48 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                        <i data-lucide="book-open-check" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold font-heading text-slate-900">12</div>
+                        <div class="text-xs text-slate-500 font-medium">Bài đọc hoàn thành</div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-2xl bg-sage-50 text-sage-600 flex items-center justify-center shrink-0">
+                        <i data-lucide="bookmark-check" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold font-heading text-slate-900" id="savedWordsCount">0</div>
+                        <div class="text-xs text-slate-500 font-medium">Từ L2 đã tích lũy</div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                        <i data-lucide="flame" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold font-heading text-slate-900">7 ngày</div>
+                        <div class="text-xs text-slate-500 font-medium">Chuỗi Streak liên tục</div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                        <i data-lucide="award" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold font-heading text-slate-900">Cấp 2</div>
+                        <div class="text-xs text-slate-500 font-medium">Chỉ số Tự Tin 50/50</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts & Recommendations -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs lg:col-span-2">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold font-heading text-slate-900 text-base">Phân Bổ Sử Dụng Ngôn Ngữ Tự Nhiên (Translanguaging Ratio)</h3>
+                        <span class="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full font-semibold">Tuần này</span>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="ratioChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold font-heading text-slate-900 text-base">Sổ Từ Vựng Gần Đây</h3>
+                        <button onclick="switchTab('practice')" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold">Xem tất cả</button>
+                    </div>
+                    <div class="space-y-3 flex-1 overflow-y-auto max-h-[260px] pr-1" id="dashVocabList"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: INTERACTIVE STORY READER -->
+        <section id="view-reader" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="space-y-4">
+                    <h3 class="font-bold font-heading text-slate-900 text-lg flex items-center space-x-2">
+                        <i data-lucide="library" class="w-5 h-5 text-indigo-600"></i>
+                        <span>Chủ Đề Dành Cho Sinh Viên</span>
+                    </h3>
+                    <div class="space-y-3" id="storyListContainer"></div>
+                </div>
+
+                <div class="lg:col-span-2 bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8 flex flex-col justify-between space-y-6">
+                    <div>
+                        <div class="flex flex-wrap items-center justify-between pb-4 border-b border-slate-100 gap-3">
+                            <div>
+                                <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-2.5 py-1 rounded-md" id="storyCategory">
+                                    Đời sống sinh viên
+                                </span>
+                                <h2 class="text-xl sm:text-2xl font-bold font-heading text-slate-900 mt-2" id="storyTitle">
+                                    Một ngày ở trường Đại học
+                                </h2>
+                            </div>
+
+                            <div class="flex items-center space-x-3 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+                                <span class="text-xs font-semibold text-slate-600">Chế độ Dual View:</span>
+                                <button onclick="toggleDualView()" id="btnDualView" class="px-3 py-1 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-xs border border-slate-200 transition-all">
+                                    Tắt
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 p-3 bg-sage-50 border border-sage-200 rounded-xl flex items-start space-x-2.5 text-xs text-sage-700">
+                            <i data-lucide="info" class="w-4 h-4 text-sage-600 shrink-0 mt-0.5"></i>
+                            <span>Nhấp vào các từ tô màu nổi bật để nghe phát âm, xem ví dụ và ngữ cảnh dịch tự nhiên!</span>
+                        </div>
+
+                        <div class="mt-6 space-y-5 leading-relaxed text-base sm:text-lg text-slate-700 font-normal" id="storyBody"></div>
+
+                        <div id="dualViewContainer" class="hidden mt-6 p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">So sánh bản dịch đối chiếu (Full Translation Reference):</h4>
+                            <div id="dualViewText" class="text-sm text-slate-600 italic space-y-2"></div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+                        <button onclick="prevStory()" class="px-4 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 flex items-center space-x-2">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            <span>Bài trước</span>
+                        </button>
+                        <span class="text-xs text-slate-400 font-medium" id="storyProgress">1 / 1</span>
+                        <button onclick="nextStory()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-md flex items-center space-x-2">
+                            <span>Bài kế tiếp</span>
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: TRANSLANGUAGING JOURNAL & AI ASSIST -->
+        <section id="view-journal" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold font-heading text-slate-900 text-lg flex items-center space-x-2">
+                                <i data-lucide="edit-3" class="w-5 h-5 text-indigo-600"></i>
+                                <span>Nhật Ký / Bài Luận Đa Ngôn Ngữ</span>
+                            </h3>
+                            <span class="text-xs text-slate-400">Tự do pha trộn L1 & L2</span>
+                        </div>
+
+                        <p class="text-xs text-slate-500">
+                            Hãy cứ thoải mái dùng bất cứ từ nào bạn nhớ (ví dụ: <span class="italic text-indigo-600">"Hôm nay mình cảm thấy khá stressed vì deadline môn Marketing..."</span>). AI sẽ không phân biệt đúng sai cứng nhắc mà hỗ trợ nâng cấp văn phong!
+                        </p>
+
+                        <textarea id="journalInput" rows="7" placeholder="Nhập nhật ký hoặc đoạn văn đan ngữ của bạn tại đây..." 
+                            class="w-full p-4 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 text-sm sm:text-base leading-relaxed resize-none focus:outline-none transition-all"></textarea>
+
+                        <div class="flex items-center justify-between pt-2">
+                            <div class="flex space-x-2">
+                                <button onclick="insertSampleJournal()" class="text-xs px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-medium transition-colors">
+                                    💡 Chèn bài mẫu
+                                </button>
+                                <button onclick="clearJournal()" class="text-xs px-3 py-1.5 text-slate-400 hover:text-slate-600 font-medium">
+                                    Xóa
+                                </button>
+                            </div>
+                            <button onclick="analyzeJournalWithAI()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center space-x-2 text-sm">
+                                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                <span>Phân Tích & Gợi Ý AI</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-5 h-full flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold font-heading text-slate-900 text-base mb-3 flex items-center space-x-2">
+                                <i data-lucide="bot" class="w-5 h-5 text-sage-600"></i>
+                                <span>Phản Hồi Từ StoryBridge AI</span>
+                            </h3>
+
+                            <div id="aiFeedbackDefault" class="text-center py-8 text-slate-400 space-y-2">
+                                <i data-lucide="message-square-dashed" class="w-10 h-10 mx-auto stroke-1"></i>
+                                <p class="text-xs">Viết bài luận hoặc nhật ký và bấm "Phân Tích" để nhận nhận xét đa ngữ thông minh.</p>
+                            </div>
+
+                            <div id="aiFeedbackResult" class="hidden space-y-4">
+                                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2">
+                                    <div class="flex justify-between text-xs font-semibold">
+                                        <span class="text-slate-700">Tỷ lệ Translanguaging:</span>
+                                        <span class="text-indigo-600" id="journalRatioText">60% L1 / 40% L2</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 rounded-full h-2 flex overflow-hidden">
+                                        <div id="barL1" class="bg-slate-500 h-full" style="width: 60%"></div>
+                                        <div id="barL2" class="bg-indigo-600 h-full" style="width: 40%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="p-3 bg-sage-50 border border-sage-200 rounded-xl text-xs text-sage-800 space-y-1">
+                                    <div class="font-bold flex items-center space-x-1">
+                                        <i data-lucide="thumbs-up" class="w-3.5 h-3.5 text-sage-600"></i>
+                                        <span>Đánh giá tự nhiên:</span>
+                                    </div>
+                                    <p id="aiEncouragement">Đoạn văn phối hợp từ ngữ rất tự nhiên!</p>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Vocabulary Booster:</span>
+                                    <div class="space-y-2 text-xs" id="aiVocabSuggestions"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-[11px] text-slate-400 text-center pt-2 border-t border-slate-100">
+                            Triết lý Translanguaging tôn trọng ngữ cảnh giao tiếp thực tế của sinh viên.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: FLASHCARDS & MINI GAME -->
+        <section id="view-practice" class="hidden space-y-8">
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold font-heading text-slate-900 text-lg">Thẻ Từ Vựng Ngữ Cảnh (Contextual Flashcards)</h3>
+                        <p class="text-xs text-slate-500">Ghi nhớ từ L2 gắn liền với câu ngữ cảnh L1 đan xen</p>
+                    </div>
+                    <span class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">Chạm để lật thẻ</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="flashcardsGrid"></div>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                            <i data-lucide="gamepad-2" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold font-heading text-slate-900 text-base">Mini-Game: Điền Từ L2 Vào Ngữ Cảnh</h3>
+                            <p class="text-xs text-slate-500">Chọn từ phù hợp nhất để hoàn thành câu đan ngữ</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full" id="quizScore">Điểm: 0</span>
+                </div>
+
+                <div class="max-w-xl mx-auto space-y-6 py-4">
+                    <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200 text-center">
+                        <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-2">Câu hỏi</span>
+                        <p class="text-base sm:text-lg text-slate-800 font-medium" id="quizQuestion"></p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3" id="quizOptions"></div>
+                    <div id="quizFeedback" class="hidden p-3 rounded-xl text-xs text-center font-semibold"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- WORD DETAIL MODAL -->
+    <div id="wordModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-sm w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div class="flex items-start justify-between">
+                <div>
+                    <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-2 py-0.5 rounded">Ngôn ngữ L2</span>
+                    <h3 id="modalWord" class="text-2xl font-bold font-heading text-slate-900 mt-1">Presentation</h3>
+                    <p id="modalPhonetic" class="text-xs text-slate-400 font-mono mt-0.5">/ˌprez.enˈteɪ.ʃən/</p>
+                </div>
+                <button onclick="playTTS()" class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 flex items-center justify-center transition-colors">
+                    <i data-lucide="volume-2" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+                    <span class="text-[11px] font-semibold text-slate-400 uppercase">Nghĩa theo ngữ cảnh:</span>
+                    <p id="modalMeaning" class="text-sm font-semibold text-slate-800">Bài thuyết trình</p>
+                </div>
+
+                <div class="space-y-1">
+                    <span class="text-[11px] font-semibold text-slate-400 uppercase">Ví dụ đan ngữ (Translanguaging):</span>
+                    <p id="modalExample" class="text-xs text-slate-600 italic bg-amber-50/60 p-2.5 rounded-lg border border-amber-100/80"></p>
+                </div>
+            </div>
+
+            <div class="flex space-x-3 pt-2">
+                <button onclick="closeModal()" class="flex-1 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50 transition-colors">
+                    Đóng
+                </button>
+                <button onclick="saveWordFromModal()" id="btnSaveWord" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md transition-colors flex items-center justify-center space-x-1.5">
+                    <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
+                    <span>Lưu Từ Này</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white text-xs px-4 py-3 rounded-2xl shadow-xl z-50 hidden flex items-center space-x-2 transition-all">
+        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+        <span id="toastMsg">Đã lưu từ vào sổ từ vựng!</span>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC & STATE ENGINE -->
+    <script>
+        // CORE STATE STORE WITH LOCALSTORAGE PERSISTENCE
+        const StoryBridgeApp = {
+            state: {
+                currentL1: 'vi',
+                currentL2: 'en',
+                currentRatioLevel: 2,
+                currentStoryIndex: 0,
+                isDualView: false,
+                quizScore: 0,
+                savedVocabulary: []
+            },
+            init() {
+                const stored = localStorage.getItem('storybridge_saved_vocab');
+                if (stored) {
+                    try {
+                        this.state.savedVocabulary = JSON.parse(stored);
+                    } catch(e) {
+                        console.error(e);
+                    }
+                } else {
+                    this.state.savedVocabulary = [
+                        { word: 'Presentation', phonetic: '/ˌprez.enˈteɪ.ʃən/', meaning: 'Bài thuyết trình', context: 'Sáng nay mình vừa hoàn thành bài presentation.', l2: 'en' },
+                        { word: 'Exhausted', phonetic: '/ɪɡˈzɔː.stɪd/', meaning: 'Kiệt sức / Rất mệt', context: 'Sau ca làm thêm thì mình cảm thấy exhausted.', l2: 'en' },
+                        { word: 'Overwhelmed', phonetic: '/ˌoʊ.vɚˈweld/', meaning: 'Ngợp / Quá tải', context: 'Tuần này có nhiều deadline quá nên khá overwhelmed.', l2: 'en' }
+                    ];
+                    this.saveVocab();
+                }
+            },
+            saveVocab() {
+                localStorage.setItem('storybridge_saved_vocab', JSON.stringify(this.state.savedVocabulary));
+            }
+        };
+
+        let currentWordModalData = null;
+
+        const storiesData = {
+            en: [
+                {
+                    title: "Một ngày ở trường Đại học",
+                    category: "Đời sống sinh viên",
+                    ratios: {
+                        1: "Buổi sáng, tôi bước vào <span class='l2-word' onclick='openWordModal(\"campus\", \"/ˈkæm.pəs/\", \"Khuôn viên trường\", \"Buổi sáng tôi bước vào campus.\")'>campus</span> với tâm trạng rất hào hứng. Hôm nay lớp tôi có một buổi <span class='l2-word' onclick='openWordModal(\"presentation\", \"/ˌprez.enˈteɪ.ʃən/\", \"Bài thuyết trình\", \"Hôm nay lớp có buổi presentation.\")'>presentation</span> quan trọng về ngành Marketing. Tôi và các bạn trong <span class='l2-word' onclick='openWordModal(\"team\", \"/tiːm/\", \"Nhóm học tập\", \"Các bạn trong team cùng cố gắng.\")'>team</span> đã chuẩn bị suốt tuần qua. Dù có chút <span class='l2-word' onclick='openWordModal(\"nervous\", \"/ˈnɝː.vəs/\", \"Lo lắng / Hồi hộp\", \"Dù có chút nervous nhưng tự tin.\")'>nervous</span>, nhưng mọi người đều rất nỗ lực.",
+                        2: "Buổi sáng, tôi bước vào <span class='l2-word' onclick='openWordModal(\"campus\", \"/ˈkæm.pəs/\", \"Khuôn viên trường\", \"Bước vào campus.\")'>campus</span> với <span class='l2-word' onclick='openWordModal(\"energy\", \"/ˈen.ɚ.dʒi/\", \"Năng lượng\", \"Tâm trạng tràn đầy energy.\")'>energy</span> tràn đầy. Hôm nay lớp tôi có một <span class='l2-word' onclick='openWordModal(\"important\", \"/ɪmˈpɔːr.tənt/\", \"Quan trọng\", \"Một important presentation.\")'>important</span> <span class='l2-word' onclick='openWordModal(\"presentation\", \"/ˌprez.enˈteɪ.ʃən/\", \"Bài thuyết trình\", \"Bài presentation về Marketing.\")'>presentation</span>. Chúng tôi đã <span class='l2-word' onclick='openWordModal(\"prepare\", \"/prɪˈper/\", \"Chuẩn bị\", \"Đã prepare suốt tuần.\")'>prepare</span> cả tuần. Mặc dù feel <span class='l2-word' onclick='openWordModal(\"nervous\", \"/ˈnɝː.vəs/\", \"Lo lắng\", \"Cảm thấy nervous.\")'>nervous</span>, mọi người vẫn tin sẽ <span class='l2-word' onclick='openWordModal(\"succeed\", \"/səkˈsiːd/\", \"Thành công\", \"Sẽ succeed thôi.\")'>succeed</span>.",
+                        3: "Every morning, I walk into <span class='l2-word' onclick='openWordModal(\"campus\", \"/ˈkæm.pəs/\", \"Khuôn viên trường\", \"Walk into campus.\")'>campus</span> với tinh thần tươi mới. Today our class has an <span class='l2-word' onclick='openWordModal(\"important\", \"/ɪmˈpɔːr.tənt/\", \"Quan trọng\", \"An important project.\")'>important</span> project. Our <span class='l2-word' onclick='openWordModal(\"team\", \"/tiːm/\", \"Nhóm\", \"Our team prepared.\")'>team</span> has <span class='l2-word' onclick='openWordModal(\"prepared\", \"/prɪˈperd/\", \"Đã chuẩn bị\", \"Has prepared for weeks.\")'>prepared</span> very hard. Although a bit <span class='l2-word' onclick='openWordModal(\"nervous\", \"/ˈnɝː.vəs/\", \"Lo lắng\", \"A bit nervous.\")'>nervous</span>, we believe we can <span class='l2-word' onclick='openWordModal(\"achieve\", \"/əˈtʃiːv/\", \"Đạt được\", \"Achieve high scores.\")'>achieve</span> high scores."
+                    },
+                    fullTranslation: "Buổi sáng, tôi bước vào khuôn viên trường đại học với tâm trạng tràn đầy năng lượng. Hôm nay lớp tôi có một bài thuyết trình quan trọng. Nhóm chúng tôi đã chuẩn bị cả tuần qua. Mặc dù có chút hồi hộp, mọi người đều tin tưởng sẽ đạt kết quả tốt."
+                }
+            ],
+            ko: [
+                {
+                    title: "Cuộc sống sinh viên tại Seoul",
+                    category: "Giao lưu văn hóa",
+                    ratios: {
+                        1: "Hôm nay mình cùng bạn ghé thăm <span class='l2-word' onclick='openWordModal(\"대학교\", \"[Dae-hak-gyo]\", \"Trường Đại học\", \"Đến 대학교 tham quan.\")'>대학교</span>. Thời tiết rất <span class='l2-word' onclick='openWordModal(\"좋아요\", \"[Cho-a-yo]\", \"Rất tốt / Đẹp\", \"Thời tiết 좋아요.\")'>좋아요</span>.",
+                        2: "Hôm nay mình cùng <span class='l2-word' onclick='openWordModal(\"친구\", \"[Chin-gu]\", \"Bạn bè\", \"Cùng 친구 đi dạo.\")'>친구</span> đến <span class='l2-word' onclick='openWordModal(\"대학교\", \"[Dae-hak-gyo]\", \"Đại học\", \"Ghé 대학교.\")'>대학교</span>. Cảm thấy rất <span class='l2-word' onclick='openWordModal(\"행복해요\", \"[Haeng-bok-hae-yo]\", \"Hạnh phúc\", \"Rất 행복해요.\")'>행복해요</span>.",
+                        3: "오늘 <span class='l2-word' onclick='openWordModal(\"친구\", \"[Chin-gu]\", \"Bạn bè\", \"Bạn học.\")'>친구</span>와 함께 <span class='l2-word' onclick='openWordModal(\"대학교\", \"[Dae-hak-gyo]\", \"Đại học\", \"Đến 대학교.\")'>대학교</span>에 갔어요."
+                    },
+                    fullTranslation: "Hôm nay tôi cùng bạn bè đến thăm trường đại học. Thời tiết hôm nay thật tuyệt vời."
+                }
+            ]
+        };
+
+        const quizData = {
+            en: [
+                {
+                    q: "Mỗi sáng, thói quen của tôi là mua một ly cà phê để _____ cho cả ngày làm việc mệt mỏi.",
+                    options: [
+                        { text: "boost energy", correct: true },
+                        { text: "feel exhausted", correct: false },
+                        { text: "cancel meeting", correct: false },
+                        { text: "sleep late", correct: false }
+                    ]
+                }
+            ],
+            ko: [
+                {
+                    q: "Cuối tuần này mình cùng _____ ghé thăm trường đại học nhé!",
+                    options: [
+                        { text: "친구 (Bạn bè)", correct: true },
+                        { text: "떡볶이 (Bánh gạo)", correct: false },
+                        { text: "학교 (Trường học)", correct: false }
+                    ]
+                }
+            ]
+        };
+
+        window.onload = function() {
+            StoryBridgeApp.init();
+            lucide.createIcons();
+            initChart();
+            renderSavedVocabulary();
+            loadStoriesForSelectedL2();
+            loadQuiz();
+            renderFlashcards();
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('section[id^="view-"]').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById('view-' + tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.classList.remove('border-indigo-600', 'text-indigo-600', 'font-semibold');
+                btn.classList.add('border-transparent', 'text-slate-600', 'font-medium');
+            });
+
+            const activeBtn = document.getElementById('tab-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('border-transparent', 'text-slate-600', 'font-medium');
+                activeBtn.classList.add('border-indigo-600', 'text-indigo-600', 'font-semibold');
+            }
+        }
+
+        function changeLanguages() {
+            StoryBridgeApp.state.currentL2 = document.getElementById('selectL2').value;
+            const l2Map = { en: 'Tiếng Anh', ko: 'Tiếng Hàn', ja: 'Tiếng Nhật', zh: 'Tiếng Trung', fr: 'Tiếng Pháp' };
+            document.getElementById('dashL2Text').innerText = l2Map[StoryBridgeApp.state.currentL2] || 'Tiếng Anh';
+            
+            StoryBridgeApp.state.currentStoryIndex = 0;
+            loadStoriesForSelectedL2();
+            renderFlashcards();
+            loadQuiz();
+            showToast(`Đã chuyển đổi cặp ngôn ngữ sang L2: ${l2Map[StoryBridgeApp.state.currentL2]}`);
+        }
+
+        function setRatio(level) {
+            StoryBridgeApp.state.currentRatioLevel = level;
+            for (let i = 1; i <= 3; i++) {
+                const btn = document.getElementById(`btnRatio${i}`);
+                if (i === level) {
+                    btn.className = "ratio-btn flex-1 sm:flex-none px-3 py-1.5 rounded-lg font-medium transition-all duration-200 bg-indigo-600 text-white shadow-sm";
+                } else {
+                    btn.className = "ratio-btn flex-1 sm:flex-none px-3 py-1.5 rounded-lg font-medium transition-all duration-200 text-slate-600 hover:text-slate-900";
+                }
+            }
+            renderCurrentStory();
+            showToast(`Đã đổi mức Translanguaging: Cấp độ ${level}`);
+        }
+
+        function loadStoriesForSelectedL2() {
+            const stories = storiesData[StoryBridgeApp.state.currentL2] || storiesData['en'];
+            const container = document.getElementById('storyListContainer');
+            container.innerHTML = '';
+
+            stories.forEach((story, idx) => {
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-2xl border transition-all cursor-pointer ${
+                    idx === StoryBridgeApp.state.currentStoryIndex 
+                    ? 'bg-indigo-50/80 border-indigo-300 shadow-sm' 
+                    : 'bg-white border-slate-200/80 hover:border-slate-300 hover:bg-slate-50'
+                }`;
+                card.onclick = () => {
+                    StoryBridgeApp.state.currentStoryIndex = idx;
+                    loadStoriesForSelectedL2();
+                };
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-[10px] font-bold text-indigo-600 bg-indigo-100/80 px-2 py-0.5 rounded">${story.category}</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                    </div>
+                    <h4 class="text-sm font-bold text-slate-800">${story.title}</h4>
+                    <p class="text-xs text-slate-500 mt-1 line-clamp-1">${story.fullTranslation}</p>
+                `;
+                container.appendChild(card);
+            });
+
+            renderCurrentStory();
+            lucide.createIcons();
+        }
+
+        function renderCurrentStory() {
+            const stories = storiesData[StoryBridgeApp.state.currentL2] || storiesData['en'];
+            if (!stories[StoryBridgeApp.state.currentStoryIndex]) StoryBridgeApp.state.currentStoryIndex = 0;
+            const story = stories[StoryBridgeApp.state.currentStoryIndex];
+
+            document.getElementById('storyTitle').innerText = story.title;
+            document.getElementById('storyCategory').innerText = story.category;
+            
+            const content = story.ratios[StoryBridgeApp.state.currentRatioLevel] || story.ratios[1];
+            document.getElementById('storyBody').innerHTML = `<p class="leading-relaxed">${content}</p>`;
+            document.getElementById('dualViewText').innerText = story.fullTranslation;
+            document.getElementById('storyProgress').innerText = `${StoryBridgeApp.state.currentStoryIndex + 1} / ${stories.length}`;
+        }
+
+        function prevStory() {
+            if (StoryBridgeApp.state.currentStoryIndex > 0) {
+                StoryBridgeApp.state.currentStoryIndex--;
+                loadStoriesForSelectedL2();
+            }
+        }
+
+        function nextStory() {
+            const stories = storiesData[StoryBridgeApp.state.currentL2] || storiesData['en'];
+            if (StoryBridgeApp.state.currentStoryIndex < stories.length - 1) {
+                StoryBridgeApp.state.currentStoryIndex++;
+                loadStoriesForSelectedL2();
+            }
+        }
+
+        function toggleDualView() {
+            StoryBridgeApp.state.isDualView = !StoryBridgeApp.state.isDualView;
+            const container = document.getElementById('dualViewContainer');
+            const btn = document.getElementById('btnDualView');
+
+            if (StoryBridgeApp.state.isDualView) {
+                container.classList.remove('hidden');
+                btn.innerText = 'Bật';
+                btn.className = 'px-3 py-1 text-xs font-bold rounded-lg bg-indigo-600 text-white shadow-xs transition-all';
+            } else {
+                container.classList.add('hidden');
+                btn.innerText = 'Tắt';
+                btn.className = 'px-3 py-1 text-xs font-bold rounded-lg bg-white text-indigo-600 border border-slate-200 transition-all';
+            }
+        }
+
+        function openWordModal(word, phonetic, meaning, context) {
+            currentWordModalData = { word, phonetic, meaning, context, l2: StoryBridgeApp.state.currentL2 };
+            document.getElementById('modalWord').innerText = word;
+            document.getElementById('modalPhonetic').innerText = phonetic;
+            document.getElementById('modalMeaning').innerText = meaning;
+            document.getElementById('modalExample').innerText = `"${context}"`;
+
+            const exists = StoryBridgeApp.state.savedVocabulary.some(v => v.word.toLowerCase() === word.toLowerCase());
+            const btnSave = document.getElementById('btnSaveWord');
+            if (exists) {
+                btnSave.innerText = 'Đã Lưu';
+                btnSave.classList.add('opacity-60');
+            } else {
+                btnSave.innerHTML = `<i data-lucide="bookmark" class="w-3.5 h-3.5"></i> <span>Lưu Từ Này</span>`;
+                btnSave.classList.remove('opacity-60');
+            }
+
+            document.getElementById('wordModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            document.getElementById('wordModal').classList.add('hidden');
+        }
+
+        function saveWordFromModal() {
+            if (!currentWordModalData) return;
+            const exists = StoryBridgeApp.state.savedVocabulary.some(v => v.word.toLowerCase() === currentWordModalData.word.toLowerCase());
+            
+            if (!exists) {
+                StoryBridgeApp.state.savedVocabulary.unshift(currentWordModalData);
+                StoryBridgeApp.saveVocab();
+                renderSavedVocabulary();
+                renderFlashcards();
+                showToast(`Đã thêm "${currentWordModalData.word}" vào sổ từ vựng!`);
+            } else {
+                showToast(`Từ "${currentWordModalData.word}" đã có trong danh sách.`);
+            }
+            closeModal();
+        }
+
+        function playTTS() {
+            if (!currentWordModalData) return;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(currentWordModalData.word);
+                const langCodes = { en: 'en-US', ko: 'ko-KR', ja: 'ja-JP', zh: 'zh-CN', fr: 'fr-FR' };
+                utterance.lang = langCodes[StoryBridgeApp.state.currentL2] || 'en-US';
+                utterance.rate = 0.85;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                showToast('Trình duyệt không hỗ trợ phát âm tự động.');
+            }
+        }
+
+        function renderSavedVocabulary() {
+            const container = document.getElementById('dashVocabList');
+            document.getElementById('savedWordsCount').innerText = StoryBridgeApp.state.savedVocabulary.length;
+            container.innerHTML = '';
+
+            StoryBridgeApp.state.savedVocabulary.slice(0, 5).forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'p-3 bg-slate-50 hover:bg-indigo-50/50 rounded-xl border border-slate-100 transition-colors flex justify-between items-center';
+                el.innerHTML = `
+                    <div>
+                        <span class="text-sm font-bold text-indigo-700">${item.word}</span>
+                        <span class="text-[11px] text-slate-400 font-mono ml-1.5">${item.phonetic}</span>
+                        <p class="text-xs text-slate-600 font-medium mt-0.5">${item.meaning}</p>
+                    </div>
+                    <button onclick="openWordModal('${item.word}', '${item.phonetic}', '${item.meaning}', '${item.context}')" class="text-xs text-slate-400 hover:text-indigo-600 p-1">
+                        <i data-lucide="info" class="w-4 h-4"></i>
+                    </button>
+                `;
+                container.appendChild(el);
+            });
+            lucide.createIcons();
+        }
+
+        function insertSampleJournal() {
+            const samples = {
+                en: "Hôm nay mình feel khá exhausted sau khi chuẩn bị presentation cho môn Marketing. Tuy nhiên, nhóm đã teamwork rất tốt!",
+                ko: "Cuối tuần mình cùng 친구 ghé thăm 대학교. Khung cảnh ở đây rất 아름다워 (đẹp)."
+            };
+            document.getElementById('journalInput').value = samples[StoryBridgeApp.state.currentL2] || samples.en;
+        }
+
+        function clearJournal() {
+            document.getElementById('journalInput').value = '';
+            document.getElementById('aiFeedbackResult').classList.add('hidden');
+            document.getElementById('aiFeedbackDefault').classList.remove('hidden');
+        }
+
+        function analyzeJournalWithAI() {
+            const text = document.getElementById('journalInput').value.trim();
+            if (!text) {
+                showToast('Vui lòng nhập bài viết trước khi phân tích!');
+                return;
+            }
+
+            document.getElementById('aiFeedbackDefault').classList.add('hidden');
+            document.getElementById('aiFeedbackResult').classList.remove('hidden');
+
+            const wordCount = text.split(/\s+/).length;
+            const l2Words = (text.match(/exhausted|presentation|teamwork|deadline|친구|대학교/gi) || []).length;
+            
+            let l2Percent = Math.min(Math.round((l2Words / Math.max(wordCount, 1)) * 100) + 35, 80);
+            let l1Percent = 100 - l2Percent;
+
+            document.getElementById('journalRatioText').innerText = `${l1Percent}% L1 / ${l2Percent}% L2`;
+            document.getElementById('barL1').style.width = `${l1Percent}%`;
+            document.getElementById('barL2').style.width = `${l2Percent}%`;
+            document.getElementById('aiEncouragement').innerText = "Đoạn văn phối hợp ngôn ngữ rất tự nhiên!";
+
+            const suggestionsContainer = document.getElementById('aiVocabSuggestions');
+            suggestionsContainer.innerHTML = `
+                <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200">
+                    <span class="font-bold text-indigo-600">exhausted</span> ➔ Gợi ý: <span class="font-semibold text-slate-800">completely drained</span> (văn phong sinh động hơn).
+                </div>
+            `;
+
+            lucide.createIcons();
+            showToast('Đã hoàn tất phân tích AI!');
+        }
+
+        function renderFlashcards() {
+            const grid = document.getElementById('flashcardsGrid');
+            grid.innerHTML = '';
+
+            const list = StoryBridgeApp.state.savedVocabulary.length > 0 ? StoryBridgeApp.state.savedVocabulary : [
+                { word: 'Presentation', phonetic: '/ˌprez.enˈteɪ.ʃən/', meaning: 'Bài thuyết trình', context: 'Sáng nay mình vừa hoàn thành bài presentation.' }
+            ];
+
+            list.slice(0, 3).forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'group perspective-1000 h-48 cursor-pointer';
+                cardEl.onclick = function() {
+                    this.querySelector('.card-inner').classList.toggle('rotate-y-180');
+                };
+
+                cardEl.innerHTML = `
+                    <div class="card-inner relative w-full h-full duration-500 transform-style-3d transition-transform shadow-sm hover:shadow-md rounded-2xl">
+                        <div class="absolute inset-0 w-full h-full bg-white border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between backface-hidden">
+                            <div class="flex justify-between items-start">
+                                <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded uppercase">Flashcard</span>
+                                <i data-lucide="rotate-cw" class="w-4 h-4 text-slate-400"></i>
+                            </div>
+                            <div class="text-center my-auto">
+                                <h4 class="text-xl font-bold text-slate-900 font-heading">${card.word}</h4>
+                                <p class="text-xs text-slate-400 font-mono mt-1">${card.phonetic}</p>
+                            </div>
+                            <p class="text-[11px] text-slate-400 text-center">Chạm để lật thẻ</p>
+                        </div>
+                        
+                        <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-indigo-600 to-indigo-800 text-white rounded-2xl p-5 flex flex-col justify-between rotate-y-180 backface-hidden">
+                            <div>
+                                <span class="text-[10px] font-bold text-indigo-200 uppercase">Nghĩa L1</span>
+                                <h4 class="text-lg font-bold text-amber-300 mt-1">${card.meaning}</h4>
+                            </div>
+                            <div class="my-auto">
+                                <p class="text-xs text-indigo-100 italic bg-white/10 p-2.5 rounded-xl border border-white/10">"${card.context}"</p>
+                            </div>
+                            <span class="text-[10px] text-indigo-200 text-right">StoryBridge</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(cardEl);
+            });
+            lucide.createIcons();
+        }
+
+        function loadQuiz() {
+            const list = quizData[StoryBridgeApp.state.currentL2] || quizData['en'];
+            const quiz = list[0];
+
+            document.getElementById('quizQuestion').innerText = `"${quiz.q}"`;
+            const optionsContainer = document.getElementById('quizOptions');
+            optionsContainer.innerHTML = '';
+            document.getElementById('quizFeedback').classList.add('hidden');
+
+            quiz.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'p-3 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 rounded-xl text-sm font-semibold text-slate-700 transition-all text-center';
+                btn.innerText = opt.text;
+                btn.onclick = () => checkQuiz(opt.correct, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkQuiz(isCorrect, btnEl) {
+            const feedback = document.getElementById('quizFeedback');
+            feedback.classList.remove('hidden');
+
+            if (isCorrect) {
+                btnEl.className = 'p-3 bg-emerald-500 text-white font-bold rounded-xl text-sm transition-all text-center';
+                feedback.className = 'p-3 rounded-xl text-xs text-center font-bold bg-emerald-50 text-emerald-700 border border-emerald-200';
+                feedback.innerText = '🎉 Chính xác!';
+                StoryBridgeApp.state.quizScore += 10;
+                document.getElementById('quizScore').innerText = `Điểm: ${StoryBridgeApp.state.quizScore}`;
+            } else {
+                btnEl.className = 'p-3 bg-rose-50 border border-rose-200 text-rose-600 font-semibold rounded-xl text-sm transition-all text-center';
+                feedback.className = 'p-3 rounded-xl text-xs text-center font-bold bg-rose-50 text-rose-700 border border-rose-200';
+                feedback.innerText = '❌ Chưa chính xác lắm, thử lại nhé!';
+            }
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('ratioChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'],
+                    datasets: [
+                        {
+                            label: 'Tỷ lệ từ L2 hòa nhập (%)',
+                            data: [20, 35, 40, 50, 55, 65, 70],
+                            borderColor: '#4f46e5',
+                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
