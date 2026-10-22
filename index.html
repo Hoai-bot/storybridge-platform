@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoryBridge - Translanguaging Learning Platform for Students</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons & Chart.js -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Nhúng file dữ liệu bài học bên ngoài -->
+    <script src="data.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Be Vietnam Pro"', 'sans-serif'],
+                        heading: ['"Plus Jakarta Sans"', '"Be Vietnam Pro"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .l2-word {
+            display: inline-block;
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            color: #3730a3;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #a5b4fc;
+            margin: 0 2px;
+        }
+        .l2-word:hover {
+            transform: translateY(-2px) scale(1.03);
+            background: linear-gradient(135deg, #c7d2fe 0%, #a5b4fc 100%);
+        }
+    </style>
+</head>
+<body class="h-full text-slate-800 bg-slate-50 flex flex-col font-sans antialiased">
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-18 py-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-emerald-500 flex items-center justify-center text-white shadow-md">
+                        <i data-lucide="languages" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <span class="text-2xl font-bold font-heading bg-gradient-to-r from-indigo-700 to-emerald-600 bg-clip-text text-transparent">StoryBridge</span>
+                        <p class="text-xs text-slate-500 font-medium hidden sm:block">Học ngôn ngữ tự nhiên qua Translanguaging</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <div class="bg-slate-100 p-1.5 rounded-xl border border-slate-200 flex items-center space-x-2">
+                        <span class="text-xs font-semibold text-slate-400">L2:</span>
+                        <select id="selectL2" onchange="changeLanguage()" class="bg-transparent text-xs font-bold text-indigo-600 focus:outline-none cursor-pointer">
+                            <option value="en">🇺🇸 Tiếng Anh</option>
+                            <option value="ko">🇰🇷 Tiếng Hàn</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RATIO SELECTOR -->
+            <div class="py-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="font-semibold text-slate-700">Tỷ lệ Translanguaging:</span>
+                <div class="flex space-x-2 bg-slate-100 p-1 rounded-xl">
+                    <button onclick="setRatio('beginner')" id="btnRatioBeginner" class="ratio-btn px-3 py-1.5 rounded-lg font-medium bg-indigo-600 text-white shadow-sm">🌱 Nhập môn</button>
+                    <button onclick="setRatio('intermediate')" id="btnRatioIntermediate" class="ratio-btn px-3 py-1.5 rounded-lg font-medium text-slate-600">🚀 Tự tin</button>
+                    <button onclick="setRatio('advanced')" id="btnRatioAdvanced" class="ratio-btn px-3 py-1.5 rounded-lg font-medium text-slate-600">🔥 Thách thức</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVIGATION TABS -->
+    <div class="bg-white border-b border-slate-200/80 sticky top-[108px] z-30 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="flex space-x-4 py-2" aria-label="Tabs">
+                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-tab py-2 px-3 rounded-lg text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600">Tổng Quan</button>
+                <button onclick="switchTab('reader')" id="tab-reader" class="nav-tab py-2 px-3 rounded-lg text-sm font-medium border-b-2 border-transparent text-slate-600">Thư Viện & Bài Đọc</button>
+                <button onclick="switchTab('practice')" id="tab-practice" class="nav-tab py-2 px-3 rounded-lg text-sm font-medium border-b-2 border-transparent text-slate-600">Thẻ Từ Vựng</button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- DASHBOARD -->
+        <section id="view-dashboard" class="space-y-6">
+            <div class="bg-gradient-to-r from-indigo-900 to-indigo-700 text-white p-6 rounded-3xl shadow-xl">
+                <h1 class="text-2xl font-extrabold mb-2">Chào mừng trở lại! 👋</h1>
+                <p class="text-indigo-100 text-sm">Nâng cao vốn từ tự nhiên thông qua phương pháp đan ngữ Translanguaging.</p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+                    <div class="text-2xl font-bold text-slate-900" id="totalStoriesCount">0</div>
+                    <div class="text-xs text-slate-500">Bài đọc trong cấp độ</div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+                    <div class="text-2xl font-bold text-slate-900" id="savedWordsCount">0</div>
+                    <div class="text-xs text-slate-500">Từ vựng đã lưu</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- READER -->
+        <section id="view-reader" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="space-y-3" id="storyListContainer"></div>
+
+                <div class="lg:col-span-2 bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-indigo-600 uppercase bg-indigo-50 px-2.5 py-1 rounded-md" id="storyCategory">Mức độ</span>
+                        <h2 class="text-2xl font-bold text-slate-900 mt-2" id="storyTitle">Đang tải bài đọc...</h2>
+                        <div class="mt-6 space-y-4 text-base text-slate-700 leading-relaxed" id="storyBody"></div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100 flex items-center justify-between mt-6">
+                        <button onclick="prevStory()" class="px-4 py-2 border rounded-xl text-sm font-semibold text-slate-600">Bài trước</button>
+                        <span class="text-xs text-slate-400 font-medium" id="storyProgress">1 / 1</span>
+                        <button onclick="nextStory()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold shadow-md">Bài kế tiếp</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRACTICE -->
+        <section id="view-practice" class="hidden space-y-6">
+            <h3 class="font-bold text-slate-900 text-lg">Thẻ Từ Vựng Đã Lưu</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="flashcardsGrid"></div>
+        </section>
+    </main>
+
+    <!-- WORD MODAL -->
+    <div id="wordModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-sm w-full p-6 space-y-4">
+            <div>
+                <h3 id="modalWord" class="text-2xl font-bold text-slate-900">Word</h3>
+                <p id="modalPhonetic" class="text-xs text-slate-400 font-mono">/phonetic/</p>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl">
+                <p id="modalMeaning" class="text-sm font-semibold text-slate-800">Nghĩa</p>
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="closeModal()" class="flex-1 py-2 border rounded-xl text-xs font-semibold">Đóng</button>
+                <button onclick="saveWordFromModal()" class="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold">Lưu Từ Này</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white text-xs px-4 py-3 rounded-2xl shadow-xl z-50 hidden">
+        <span id="toastMsg">Thông báo</span>
+    </div>
+
+    <!-- MAIN APP SCRIPT -->
+    <script>
+        const StoryBridgeApp = {
+            state: {
+                currentL2: 'en',
+                currentLevel: 'beginner',
+                currentStoryIndex: 0,
+                savedVocabulary: []
+            },
+            init() {
+                const stored = localStorage.getItem('storybridge_saved_vocab');
+                if (stored) {
+                    try { this.state.savedVocabulary = JSON.parse(stored); } catch(e){}
+                }
+            },
+            saveVocab() {
+                localStorage.setItem('storybridge_saved_vocab', JSON.stringify(this.state.savedVocabulary));
+            }
+        };
+
+        let currentWordModalData = null;
+
+        window.onload = function() {
+            StoryBridgeApp.init();
+            lucide.createIcons();
+            renderStoryList();
+            renderSavedVocabulary();
+            renderFlashcards();
+        };
+
+        function setRatio(level) {
+            StoryBridgeApp.state.currentLevel = level;
+            StoryBridgeApp.state.currentStoryIndex = 0;
+
+            ['beginner', 'intermediate', 'advanced'].forEach(l => {
+                const cap = l.charAt(0).toUpperCase() + l.slice(1);
+                const btn = document.getElementById(`btnRatio${cap}`);
+                if (l === level) {
+                    btn.className = "ratio-btn px-3 py-1.5 rounded-lg font-medium bg-indigo-600 text-white shadow-sm";
+                } else {
+                    btn.className = "ratio-btn px-3 py-1.5 rounded-lg font-medium text-slate-600";
+                }
+            });
+
+            renderStoryList();
+        }
+
+        function changeLanguage() {
+            StoryBridgeApp.state.currentL2 = document.getElementById('selectL2').value;
+            StoryBridgeApp.state.currentStoryIndex = 0;
+            renderStoryList();
+        }
+
+        function getActiveStories() {
+            if (typeof storyLibrary === 'undefined') return [];
+            const langData = storyLibrary[StoryBridgeApp.state.currentL2] || storyLibrary['en'] || {};
+            return langData[StoryBridgeApp.state.currentLevel] || [];
+        }
+
+        function renderStoryList() {
+            const stories = getActiveStories();
+            const container = document.getElementById('storyListContainer');
+            container.innerHTML = '';
+
+            document.getElementById('totalStoriesCount').innerText = stories.length;
+
+            if (stories.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400">Chưa có bài đọc cho cấp độ này.</p>';
+                document.getElementById('storyTitle').innerText = 'Chưa có dữ liệu';
+                document.getElementById('storyBody').innerHTML = '';
+                return;
+            }
+
+            stories.forEach((story, idx) => {
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-2xl border transition-all cursor-pointer ${
+                    idx === StoryBridgeApp.state.currentStoryIndex 
+                    ? 'bg-indigo-50 border-indigo-300 shadow-sm' 
+                    : 'bg-white border-slate-200 hover:bg-slate-50'
+                }`;
+                card.onclick = () => {
+                    StoryBridgeApp.state.currentStoryIndex = idx;
+                    renderStoryList();
+                };
+
+                card.innerHTML = `
+                    <span class="text-[10px] font-bold text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded">${story.category || 'Bài đọc'}</span>
+                    <h4 class="text-sm font-bold text-slate-800 mt-1">${story.title}</h4>
+                `;
+                container.appendChild(card);
+            });
+
+            renderCurrentStory();
+        }
+
+        function renderCurrentStory() {
+            const stories = getActiveStories();
+            const story = stories[StoryBridgeApp.state.currentStoryIndex] || stories[0];
+
+            if (story) {
+                document.getElementById('storyTitle').innerText = story.title;
+                document.getElementById('storyCategory').innerText = story.category || 'Bài đọc';
+                document.getElementById('storyBody').innerHTML = `<p class="leading-relaxed">${story.content}</p>`;
+                document.getElementById('storyProgress').innerText = `${StoryBridgeApp.state.currentStoryIndex + 1} / ${stories.length}`;
+            }
+        }
+
+        function prevStory() {
+            if (StoryBridgeApp.state.currentStoryIndex > 0) {
+                StoryBridgeApp.state.currentStoryIndex--;
+                renderStoryList();
+            }
+        }
+
+        function nextStory() {
+            const stories = getActiveStories();
+            if (StoryBridgeApp.state.currentStoryIndex < stories.length - 1) {
+                StoryBridgeApp.state.currentStoryIndex++;
+                renderStoryList();
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('section[id^="view-"]').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById('view-' + tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.classList.remove('border-indigo-600', 'text-indigo-600', 'font-semibold');
+                btn.classList.add('border-transparent', 'text-slate-600');
+            });
+            const activeBtn = document.getElementById('tab-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('border-transparent', 'text-slate-600');
+                activeBtn.classList.add('border-indigo-600', 'text-indigo-600', 'font-semibold');
+            }
+        }
+
+        function openWordModal(word, phonetic, meaning) {
+            currentWordModalData = { word, phonetic, meaning };
+            document.getElementById('modalWord').innerText = word;
+            document.getElementById('modalPhonetic').innerText = phonetic;
+            document.getElementById('modalMeaning').innerText = meaning;
+            document.getElementById('wordModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('wordModal').classList.add('hidden');
+        }
+
+        function saveWordFromModal() {
+            if (!currentWordModalData) return;
+            const exists = StoryBridgeApp.state.savedVocabulary.some(v => v.word.toLowerCase() === currentWordModalData.word.toLowerCase());
+            if (!exists) {
+                StoryBridgeApp.state.savedVocabulary.unshift(currentWordModalData);
+                StoryBridgeApp.saveVocab();
+                renderSavedVocabulary();
+                renderFlashcards();
+                showToast(`Đã lưu "${currentWordModalData.word}"`);
+            } else {
+                showToast(`Từ "${currentWordModalData.word}" đã tồn tại`);
+            }
+            closeModal();
+        }
+
+        function renderSavedVocabulary() {
+            const container = document.getElementById('dashVocabList');
+            if (!container) return;
+            document.getElementById('savedWordsCount').innerText = StoryBridgeApp.state.savedVocabulary.length;
+            container.innerHTML = '';
+
+            StoryBridgeApp.state.savedVocabulary.slice(0, 5).forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'p-3 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center';
+                el.innerHTML = `<span class="text-sm font-bold text-indigo-700">${item.word}</span><span class="text-xs text-slate-600">${item.meaning}</span>`;
+                container.appendChild(el);
+            });
+        }
+
+        function renderFlashcards() {
+            const grid = document.getElementById('flashcardsGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            StoryBridgeApp.state.savedVocabulary.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'p-5 bg-white border border-slate-200 rounded-2xl shadow-sm text-center';
+                cardEl.innerHTML = `<h4 class="text-lg font-bold text-indigo-600">${card.word}</h4><p class="text-xs text-slate-400 font-mono mt-0.5">${card.phonetic}</p><p class="text-xs text-slate-600 font-medium mt-2">${card.meaning}</p>`;
+                grid.appendChild(cardEl);
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 2500);
+        }
+    </script>
+</body>
+</html>
