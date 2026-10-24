@@ -475,22 +475,72 @@
         function analyzeJournalWithAI() {
             const text = document.getElementById('journalInput').value.trim();
             const feedback = document.getElementById('aiFeedback');
+            
             if (!text) {
                 showToast("Vui lòng viết vài câu trước khi phân tích!");
                 return;
             }
 
+            // Tách các từ trong văn bản
+            const words = text.match(/[\p{L}0-9'-]+/gu) || [];
+            if (words.length === 0) {
+                showToast("Không tìm thấy từ hợp lệ để phân tích!");
+                return;
+            }
+
+            // Nhận diện từ tiếng Anh (chỉ chứa chữ cái ASCII, không có dấu tiếng Việt)
+            const englishWordRegex = /^[A-Za-z]+$/;
+            let englishCount = 0;
+            const detectedEnglishWords = [];
+
+            words.forEach(word => {
+                if (englishWordRegex.test(word)) {
+                    englishCount++;
+                    if (!detectedEnglishWords.includes(word.toLowerCase())) {
+                        detectedEnglishWords.push(word.toLowerCase());
+                    }
+                }
+            });
+
+            const ratio = Math.round((englishCount / words.length) * 100);
             feedback.classList.remove('hidden');
-            feedback.innerHTML = `
-                <div class="flex items-center gap-2 font-bold text-indigo-800">
-                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
-                    <span>Kết Quả Đánh Giá AI Translanguaging:</span>
-                </div>
-                <p>• <b>Tỷ lệ pha trộn L2 (Tiếng Anh):</b> Ước tính đạt ~35% (Rất tự nhiên cho mức Intermediate!).</p>
-                <p>• <b>Khen ngợi:</b> Bạn lồng ghép các từ nối ngữ cảnh rất tốt, ngữ điệu tự nhiên không gượng ép.</p>
-                <p>• <b>Gợi ý nâng cao:</b> Thử thay thế cụm từ <i>'làm bài'</i> bằng <i>'work on my assignment'</i> để tăng thêm vốn từ nhé!</p>
-            `;
-            lucide.createIcons();
+
+            if (ratio === 0) {
+                feedback.innerHTML = `
+                    <div class="flex items-center gap-2 font-bold text-amber-800">
+                        <i data-lucide="alert-circle" class="w-4 h-4 text-amber-600"></i>
+                        <span>Kết Quả Đánh Giá AI Translanguaging:</span>
+                    </div>
+                    <p>• <b>Tỷ lệ pha trộn L2 (Tiếng Anh):</b> 0% (${englishCount}/${words.length} từ).</p>
+                    <p>• <b>Nhận xét:</b> Bạn đang viết hoàn toàn bằng 100% Tiếng Việt và chưa chèn từ vựng tiếng Anh nào.</p>
+                    <p>• <b>Gợi ý:</b> Hãy thử đan xen một vài từ tiếng Anh vừa học (ví dụ: thay vì viết <i>"khuôn viên trường"</i>, hãy viết <i>"campus"</i>; thay vì <i>"hạn chót"</i>, hãy viết <i>"deadline"</i>) để luyện tập phản xạ nhé!</p>
+                `;
+            } else {
+                let levelAssessment = "";
+                if (ratio < 30) {
+                    levelAssessment = "🌱 Mức độ Nhập môn (Beginner ~20%)";
+                } else if (ratio <= 60) {
+                    levelAssessment = "🚀 Mức độ Tự tin (Intermediate ~50%)";
+                } else {
+                    levelAssessment = "🔥 Mức độ Thách thức (Advanced ~80%)";
+                }
+
+                const sampleWords = detectedEnglishWords.slice(0, 5).map(w => `<code class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded font-mono text-xs">${w}</code>`).join(" ");
+
+                feedback.innerHTML = `
+                    <div class="flex items-center gap-2 font-bold text-indigo-800">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
+                        <span>Kết Quả Đánh Giá AI Translanguaging:</span>
+                    </div>
+                    <p>• <b>Tỷ lệ pha trộn L2 (Tiếng Anh):</b> Đạt <b>${ratio}%</b> (${englishCount}/${words.length} từ) — Phù hợp với <b>${levelAssessment}</b>.</p>
+                    <p>• <b>Từ L2 phát hiện được:</b> ${sampleWords || "Chưa rõ"}.</p>
+                    <p>• <b>Đánh giá:</b> Bạn đã áp dụng thành công kỹ thuật code-switching để ghi nhớ từ vựng trong ngữ cảnh thực tế!</p>
+                `;
+            }
+
+            if (window.lucide) {
+                lucide.createIcons();
+            }
             showToast("Đã phân tích xong nhật ký!");
         }
 
