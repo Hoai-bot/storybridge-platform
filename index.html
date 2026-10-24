@@ -13,6 +13,8 @@
     <!-- Lucide Icons & Chart.js -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Nhúng file dữ liệu bài học bên ngoài -->
     <script src="data.js"></script>
@@ -50,7 +52,7 @@
 </head>
 <body class="h-full text-slate-800 bg-slate-50 flex flex-col font-sans antialiased">
 
-    <!-- HEADER CHUYÊN BIỆT VIỆT - ANH -->
+    <!-- HEADER CHUYÊN BIỆT VIỆT - ANH & AUTH CLOUD -->
     <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-18 py-3">
@@ -64,16 +66,28 @@
                     </div>
                 </div>
 
-                <!-- Gamification: Streak & Language Badge -->
+                <!-- KHU VỰC TÀI KHOẢN & ĐỒNG BỘ ĐÁM MÂY -->
                 <div class="flex items-center space-x-3">
-                    <div class="flex items-center space-x-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-xs font-bold shadow-sm">
+                    <div class="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-xs font-bold shadow-sm">
                         <i data-lucide="flame" class="w-4 h-4 text-amber-500 fill-amber-500"></i>
                         <span>Chuỗi 7 ngày 🔥</span>
                     </div>
-                    <div class="px-3 py-1.5 bg-indigo-50 border border-indigo-200 rounded-xl text-indigo-700 text-xs font-bold flex items-center space-x-1">
-                        <span>🇻🇳 Tiếng Việt</span>
-                        <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-indigo-400"></i>
-                        <span>🇺🇸 English</span>
+
+                    <!-- Nút Đăng nhập cho Khách -->
+                    <div id="authGuest" class="flex items-center">
+                        <button onclick="loginWithGoogle()" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition-all">
+                            <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+                            <span>Đăng nhập Google</span>
+                        </button>
+                    </div>
+
+                    <!-- Hiển thị tài khoản đã đăng nhập -->
+                    <div id="authUser" class="hidden items-center space-x-2 bg-slate-100 py-1 px-2.5 rounded-xl border border-slate-200">
+                        <img id="userAvatar" src="" alt="Avatar" class="w-6 h-6 rounded-full border border-indigo-300">
+                        <span id="userName" class="text-xs font-bold text-slate-700 max-w-[110px] truncate">Người dùng</span>
+                        <button onclick="logout()" class="text-slate-400 hover:text-red-500 ml-1 p-0.5 rounded" title="Đăng xuất">
+                            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -235,7 +249,7 @@
             </div>
         </section>
 
-        <!-- TAB 3: SMART STORY BUILDER (TẠO BÀI TỰ ĐỘNG THEO CHỦ ĐỀ VÀ CẤP ĐỘ) -->
+        <!-- TAB 3: SMART STORY BUILDER -->
         <section id="view-builder" class="hidden space-y-6">
             <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
                 <div>
@@ -249,7 +263,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Ngân hàng chủ đề gợi ý -->
                     <div class="space-y-3">
                         <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Gợi ý chủ đề thịnh hành:</label>
                         <div class="flex flex-wrap gap-2" id="presetTopicTags">
@@ -267,7 +280,6 @@
                         </div>
                     </div>
 
-                    <!-- Chọn độ khó & Tùy chọn -->
                     <div class="space-y-4 bg-slate-50 p-5 rounded-2xl border border-slate-200/80">
                         <div>
                             <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Chọn cấp độ bài viết:</label>
@@ -297,7 +309,6 @@
                     </div>
                 </div>
 
-                <!-- Preview bài vừa tạo -->
                 <div id="builderPreviewArea" class="hidden pt-6 border-t border-slate-100 space-y-3">
                     <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">✓ Bài học vừa được tạo và tự động lưu:</span>
                     <h3 id="previewTitle" class="text-xl font-bold text-slate-900"></h3>
@@ -349,7 +360,6 @@
                     <h3 id="modalWord" class="text-2xl font-bold text-slate-900 font-heading">Word</h3>
                     <p id="modalPhonetic" class="text-xs text-indigo-600 font-mono font-semibold mt-0.5">/phonetic/</p>
                 </div>
-                <!-- Nút phát âm trên Modal -->
                 <button onclick="speakWord(currentWordModalData ? currentWordModalData.word : '')" class="w-10 h-10 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 flex items-center justify-center transition-all shadow-sm" title="Nghe phát âm">
                     <i data-lucide="volume-2" class="w-5 h-5"></i>
                 </button>
@@ -372,27 +382,139 @@
 
     <!-- MAIN JAVASCRIPT LOGIC -->
     <script>
+        // ==========================================
+        // CẤU HÌNH SUPABASE (Thay bằng thông tin Project của bạn)
+        // ==========================================
+        const SUPABASE_URL = "https://your-project-id.supabase.co";
+        const SUPABASE_ANON_KEY = "your-anon-public-key";
+        
+        let supabaseClient = null;
+        if (typeof supabase !== 'undefined' && SUPABASE_URL !== "https://your-project-id.supabase.co") {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+
         const StoryBridgeApp = {
             state: {
+                currentUser: null,
                 currentLevel: 'beginner',
                 currentStoryIndex: 0,
                 lastGeneratedStoryIndex: null,
-                savedVocabulary: [
-                    { word: "campus", phonetic: "/ˈkæm.pəs/", meaning: "Khuôn viên trường" },
-                    { word: "presentation", phonetic: "/ˌprez.enˈteɪ.ʃən/", meaning: "Bài thuyết trình" },
-                    { word: "deadline", phonetic: "/ˈded.laɪn/", meaning: "Hạn chót hoàn thành" }
-                ]
+                savedVocabulary: []
             },
-            init() {
+            async init() {
+                // Kiểm tra xem Supabase đã kết nối chưa
+                if (supabaseClient) {
+                    const { data: { session } } = await supabaseClient.auth.getSession();
+                    if (session) {
+                        this.handleUserSession(session.user);
+                    } else {
+                        this.renderGuestUI();
+                        this.loadFallbackVocab();
+                    }
+
+                    supabaseClient.auth.onAuthStateChange((_event, session) => {
+                        if (session) {
+                            this.handleUserSession(session.user);
+                        } else {
+                            this.handleUserLogout();
+                        }
+                    });
+                } else {
+                    // Chế độ dự phòng hoàn toàn bằng LocalStorage nếu chưa điền Key Supabase
+                    this.renderGuestUI();
+                    this.loadFallbackVocab();
+                }
+            },
+
+            handleUserSession(user) {
+                this.state.currentUser = user;
+                document.getElementById('authGuest').classList.add('hidden');
+                const userBox = document.getElementById('authUser');
+                userBox.classList.remove('hidden');
+                userBox.classList.add('flex');
+
+                document.getElementById('userName').innerText = user.user_metadata?.full_name || user.email;
+                document.getElementById('userAvatar').src = user.user_metadata?.avatar_url || 'https://via.placeholder.com/32';
+
+                this.fetchCloudVocab();
+                if (window.lucide) lucide.createIcons();
+            },
+
+            handleUserLogout() {
+                this.state.currentUser = null;
+                document.getElementById('authUser').classList.add('hidden');
+                document.getElementById('authUser').classList.remove('flex');
+                document.getElementById('authGuest').classList.remove('hidden');
+                this.loadFallbackVocab();
+                if (window.lucide) lucide.createIcons();
+            },
+
+            renderGuestUI() {
+                const userBox = document.getElementById('authUser');
+                if (userBox) {
+                    userBox.classList.add('hidden');
+                    userBox.classList.remove('flex');
+                }
+                const guestBox = document.getElementById('authGuest');
+                if (guestBox) guestBox.classList.remove('hidden');
+            },
+
+            async fetchCloudVocab() {
+                if (!supabaseClient || !this.state.currentUser) return;
+                const { data, error } = await supabaseClient
+                    .from('user_vocab')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (!error && data) {
+                    this.state.savedVocabulary = data;
+                    renderSavedVocabulary();
+                    renderFlashcards();
+                }
+            },
+
+            loadFallbackVocab() {
                 const stored = localStorage.getItem('storybridge_vi_en_vocab');
                 if (stored) {
                     try { this.state.savedVocabulary = JSON.parse(stored); } catch(e){}
+                } else {
+                    this.state.savedVocabulary = [
+                        { word: "campus", phonetic: "/ˈkæm.pəs/", meaning: "Khuôn viên trường" },
+                        { word: "presentation", phonetic: "/ˌprez.enˈteɪ.ʃən/", meaning: "Bài thuyết trình" },
+                        { word: "deadline", phonetic: "/ˈded.laɪn/", meaning: "Hạn chót hoàn thành" }
+                    ];
                 }
+                renderSavedVocabulary();
+                renderFlashcards();
             },
-            saveVocab() {
+
+            saveVocabLocal() {
                 localStorage.setItem('storybridge_vi_en_vocab', JSON.stringify(this.state.savedVocabulary));
             }
         };
+
+        // Đăng nhập Google qua Supabase
+        async function loginWithGoogle() {
+            if (!supabaseClient) {
+                showToast("Vui lòng cấu hình URL và API Key của Supabase!");
+                return;
+            }
+            const { error } = await supabaseClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin
+                }
+            });
+            if (error) showToast("Lỗi đăng nhập: " + error.message);
+        }
+
+        // Đăng xuất
+        async function logout() {
+            if (supabaseClient) {
+                await supabaseClient.auth.signOut();
+                showToast("Đã đăng xuất tài khoản");
+            }
+        }
 
         // Ngân hàng template cốt lõi cho Trình tạo bài thông minh (Smart Story Builder)
         const storyBuilderBank = {
@@ -645,18 +767,15 @@
                 fullTranslation: "Đoạn văn được hệ thống Smart Story Builder tự động tổng hợp."
             };
 
-            // Thêm bài học mới vào thư viện đang chạy
             if (typeof storyLibrary !== 'undefined') {
                 if (!storyLibrary[level]) { storyLibrary[level] = []; }
                 storyLibrary[level].unshift(newStoryObj);
             }
 
-            // Hiển thị khung xem trước
             document.getElementById('previewTitle').innerText = newStoryObj.title;
             document.getElementById('previewBody').innerHTML = newStoryObj.content;
             document.getElementById('builderPreviewArea').classList.remove('hidden');
 
-            // Cập nhật trạng thái và đồng bộ
             setRatio(level);
             StoryBridgeApp.state.currentStoryIndex = 0;
             renderStoryList();
@@ -678,7 +797,7 @@
                 return;
             }
 
-            window.speechSynthesis.cancel(); // Dừng âm thanh trước nếu đang phát
+            window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'en-US';
             utterance.rate = 0.9;
@@ -698,17 +817,45 @@
             document.getElementById('wordModal').classList.add('hidden');
         }
 
-        function saveWordFromModal() {
+        // LƯU TỪ VỰNG: ĐỒNG BỘ SUPABASE HOẶC LOCALSTORAGE DỰ PHÒNG
+        async function saveWordFromModal() {
             if (!currentWordModalData) return;
-            const exists = StoryBridgeApp.state.savedVocabulary.some(v => v.word.toLowerCase() === currentWordModalData.word.toLowerCase());
-            if (!exists) {
-                StoryBridgeApp.state.savedVocabulary.unshift(currentWordModalData);
-                StoryBridgeApp.saveVocab();
-                renderSavedVocabulary();
-                renderFlashcards();
-                showToast(`Đã lưu "${currentWordModalData.word}"`);
-            } else {
-                showToast(`Từ "${currentWordModalData.word}" đã có trong sổ từ`);
+
+            const wordItem = {
+                word: currentWordModalData.word,
+                phonetic: currentWordModalData.phonetic,
+                meaning: currentWordModalData.meaning
+            };
+
+            // Nếu người dùng ĐÃ ĐĂNG NHẬP Supabase: Lưu lên Cloud
+            if (supabaseClient && StoryBridgeApp.state.currentUser) {
+                const { error } = await supabaseClient
+                    .from('user_vocab')
+                    .insert([{
+                        user_id: StoryBridgeApp.state.currentUser.id,
+                        ...wordItem
+                    }]);
+
+                if (error) {
+                    showToast("Lỗi đồng bộ đám mây: " + error.message);
+                    return;
+                }
+
+                await StoryBridgeApp.fetchCloudVocab();
+                showToast(`Đã lưu "${wordItem.word}" lên đám mây ☁️`);
+            } 
+            // Nếu chưa đăng nhập: Lưu LocalStorage
+            else {
+                const exists = StoryBridgeApp.state.savedVocabulary.some(v => v.word.toLowerCase() === wordItem.word.toLowerCase());
+                if (!exists) {
+                    StoryBridgeApp.state.savedVocabulary.unshift(wordItem);
+                    StoryBridgeApp.saveVocabLocal();
+                    renderSavedVocabulary();
+                    renderFlashcards();
+                    showToast(`Đã lưu "${wordItem.word}". Đăng nhập để đồng bộ đa thiết bị!`);
+                } else {
+                    showToast(`Từ "${wordItem.word}" đã có trong sổ từ`);
+                }
             }
             closeModal();
         }
@@ -735,7 +882,6 @@
                 const cardEl = document.createElement('div');
                 cardEl.className = 'p-5 bg-white border border-slate-200 rounded-2xl shadow-sm text-center cursor-pointer hover:border-indigo-300 transition-all relative group';
                 
-                // Ngăn lật thẻ khi nhấp nút loa
                 cardEl.onclick = function(e) {
                     if (e.target.closest('.audio-btn')) return;
                     const meaningEl = this.querySelector('.card-meaning');
