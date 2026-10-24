@@ -111,13 +111,17 @@
                     <i data-lucide="book-open" class="w-4 h-4"></i>
                     <span>Thư Viện & Bài Đọc</span>
                 </button>
+                <button onclick="switchTab('builder')" id="tab-builder" class="nav-tab py-2 px-3 rounded-lg text-sm font-medium border-b-2 border-transparent text-slate-600 flex items-center space-x-2">
+                    <i data-lucide="wand-2" class="w-4 h-4"></i>
+                    <span>Tạo Bài Bằng AI ⚡</span>
+                </button>
                 <button onclick="switchTab('journal')" id="tab-journal" class="nav-tab py-2 px-3 rounded-lg text-sm font-medium border-b-2 border-transparent text-slate-600 flex items-center space-x-2">
                     <i data-lucide="pen-tool" class="w-4 h-4"></i>
                     <span>Nhật Ký & AI Assist</span>
                 </button>
                 <button onclick="switchTab('practice')" id="tab-practice" class="nav-tab py-2 px-3 rounded-lg text-sm font-medium border-b-2 border-transparent text-slate-600 flex items-center space-x-2">
                     <i data-lucide="sparkles" class="w-4 h-4"></i>
-                    <span>Thẻ Từ & Mini-Game</span>
+                    <span>Thẻ Từ & Flashcards</span>
                 </button>
             </nav>
         </div>
@@ -193,10 +197,15 @@
         <section id="view-reader" class="hidden space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="space-y-3">
-                    <h3 class="font-bold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="library" class="w-5 h-5 text-indigo-600"></i>
-                        <span>Danh Sách Bài Học</span>
-                    </h3>
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="library" class="w-5 h-5 text-indigo-600"></i>
+                            <span>Danh Sách Bài Học</span>
+                        </h3>
+                        <button onclick="switchTab('builder')" class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg flex items-center gap-1">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tạo bài mới
+                        </button>
+                    </div>
                     <div class="space-y-3" id="storyListContainer"></div>
                 </div>
 
@@ -226,7 +235,83 @@
             </div>
         </section>
 
-        <!-- TAB 3: JOURNAL & AI ASSIST -->
+        <!-- TAB 3: SMART STORY BUILDER (TẠO BÀI TỰ ĐỘNG THEO CHỦ ĐỀ VÀ CẤP ĐỘ) -->
+        <section id="view-builder" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                            <i data-lucide="sparkles" class="w-5 h-5"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-900">Trình Tạo Bài Học Thông Minh (Smart Story Builder)</h2>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">Chọn từ ngân hàng chủ đề phổ biến hoặc tự nhập ý tưởng của bạn. Thuật toán sẽ sinh bài đọc đan ngữ với từ vựng IPA tương ứng theo đúng cấp độ!</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Ngân hàng chủ đề gợi ý -->
+                    <div class="space-y-3">
+                        <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Gợi ý chủ đề thịnh hành:</label>
+                        <div class="flex flex-wrap gap-2" id="presetTopicTags">
+                            <button onclick="selectPresetTopic('coffee_study')" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 transition-all">☕ Cà phê chạy deadline</button>
+                            <button onclick="selectPresetTopic('travel_flight')" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 transition-all">✈️ Du lịch & Sân bay</button>
+                            <button onclick="selectPresetTopic('interview_intern')" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 transition-all">💼 Phỏng vấn thực tập</button>
+                            <button onclick="selectPresetTopic('social_trend')" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 transition-all">📱 TikTok & Mạng xã hội</button>
+                            <button onclick="selectPresetTopic('healthy_gym')" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 transition-all">🏋️‍♀️ Tập Gym & Eat Clean</button>
+                            <button onclick="selectPresetTopic('ai_future')" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 transition-all">🤖 Trí tuệ nhân tạo (AI)</button>
+                        </div>
+
+                        <div class="pt-2">
+                            <label class="text-xs font-bold text-slate-700">Hoặc tự nhập tên chủ đề bài viết:</label>
+                            <input type="text" id="builderTopicInput" placeholder="Ví dụ: Lạc đường khi đi phượt vùng cao..." class="w-full mt-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                        </div>
+                    </div>
+
+                    <!-- Chọn độ khó & Tùy chọn -->
+                    <div class="space-y-4 bg-slate-50 p-5 rounded-2xl border border-slate-200/80">
+                        <div>
+                            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Chọn cấp độ bài viết:</label>
+                            <div class="grid grid-cols-3 gap-2 mt-2">
+                                <label class="p-3 border rounded-xl bg-white text-center cursor-pointer hover:border-indigo-500 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50">
+                                    <input type="radio" name="builderLevel" value="beginner" checked class="hidden">
+                                    <div class="text-xs font-bold text-slate-800">🌱 Nhập môn</div>
+                                    <div class="text-[10px] text-slate-500">~20% L2</div>
+                                </label>
+                                <label class="p-3 border rounded-xl bg-white text-center cursor-pointer hover:border-indigo-500 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50">
+                                    <input type="radio" name="builderLevel" value="intermediate" class="hidden">
+                                    <div class="text-xs font-bold text-slate-800">🚀 Tự tin</div>
+                                    <div class="text-[10px] text-slate-500">~50% L2</div>
+                                </label>
+                                <label class="p-3 border rounded-xl bg-white text-center cursor-pointer hover:border-indigo-500 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50">
+                                    <input type="radio" name="builderLevel" value="advanced" class="hidden">
+                                    <div class="text-xs font-bold text-slate-800">🔥 Thách thức</div>
+                                    <div class="text-[10px] text-slate-500">~80% L2</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button onclick="generateCustomStory()" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-700 hover:to-emerald-700 text-white rounded-xl text-sm font-bold shadow-md flex items-center justify-center gap-2">
+                            <i data-lucide="zap" class="w-4 h-4"></i>
+                            <span>Tạo & Đưa Vào Bài Đọc Ngay</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Preview bài vừa tạo -->
+                <div id="builderPreviewArea" class="hidden pt-6 border-t border-slate-100 space-y-3">
+                    <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">✓ Bài học vừa được tạo và tự động lưu:</span>
+                    <h3 id="previewTitle" class="text-xl font-bold text-slate-900"></h3>
+                    <div id="previewBody" class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 text-sm leading-relaxed"></div>
+                    <div class="flex gap-3">
+                        <button onclick="readNewGeneratedStory()" class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-md hover:bg-indigo-700 flex items-center gap-1.5">
+                            <i data-lucide="book-open" class="w-4 h-4"></i> Đọc bài này ngay trong Thư viện
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: JOURNAL & AI ASSIST -->
         <section id="view-journal" class="hidden space-y-6">
             <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
                 <div class="flex items-center gap-2">
@@ -243,7 +328,7 @@
             </div>
         </section>
 
-        <!-- TAB 4: PRACTICE & MINI GAME -->
+        <!-- TAB 5: PRACTICE & MINI GAME -->
         <section id="view-practice" class="hidden space-y-6">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
@@ -285,6 +370,7 @@
             state: {
                 currentLevel: 'beginner',
                 currentStoryIndex: 0,
+                lastGeneratedStoryIndex: null,
                 savedVocabulary: [
                     { word: "campus", phonetic: "/ˈkæm.pəs/", meaning: "Khuôn viên trường" },
                     { word: "presentation", phonetic: "/ˌprez.enˈteɪ.ʃən/", meaning: "Bài thuyết trình" },
@@ -299,6 +385,106 @@
             },
             saveVocab() {
                 localStorage.setItem('storybridge_vi_en_vocab', JSON.stringify(this.state.savedVocabulary));
+            }
+        };
+
+        // Ngân hàng template cốt lõi cho Trình tạo bài thông minh (Smart Story Builder)
+        const storyBuilderBank = {
+            coffee_study: {
+                title: "Chạy Deadline Tại Quán Cà Phê",
+                category: "☕ Đời sống & Học tập",
+                beginner: {
+                    content: "Chiều nay mình ghé <span class='l2-word' onclick='openWordModal(\"coffee shop\", \"/ˈkɑː.fi ʃɑːp/\", \"Quán cà phê\")'>coffee shop</span> gần trường để tìm một góc yên tĩnh. Mình mở <span class='l2-word' onclick='openWordModal(\"laptop\", \"/ˈlæp.tɑːp/\", \"Máy tính xách tay\")'>laptop</span> lên và bắt đầu giải quyết đống <span class='l2-word' onclick='openWordModal(\"assignment\", \"/əˈsaɪn.mənt/\", \"Bài tập lớn / Đồ án\")'>assignment</span> trước khi đến hạn <span class='l2-word' onclick='openWordModal(\"deadline\", \"/ˈded.laɪn/\", \"Hạn chót\")'>deadline</span>.",
+                    fullTranslation: "Chiều nay mình ghé quán cà phê gần trường để tìm góc yên tĩnh. Mình mở máy tính xách tay và hoàn thành bài tập trước hạn nộp."
+                },
+                intermediate: {
+                    content: "Our study group decided to <span class='l2-word' onclick='openWordModal(\"gather\", \"/ˈɡæð.ɚ/\", \"Tập hợp / Tụ họp\")'>gather</span> tại quán cà phê để <span class='l2-word' onclick='openWordModal(\"brainstorm\", \"/ˈbreɪn.stɔːrm/\", \"Động não / Tìm ý tưởng\")'>brainstorm</span> ý tưởng mới. Chúng mình cần chuẩn bị một bài <span class='l2-word' onclick='openWordModal(\"pitch\", \"/pɪtʃ/\", \"Bài thuyết trình ngắn\")'>pitch</span> thật ấn tượng nhằm đạt <span class='l2-word' onclick='openWordModal(\"outstanding\", \"/ˌaʊtˈstæn.dɪŋ/\", \"Xuất sắc\")'>outstanding</span> kết quả.",
+                    fullTranslation: "Nhóm chúng tôi quyết định tụ họp tại quán cà phê để động não tìm ý tưởng mới. Cả nhóm cần chuẩn bị một bài thuyết trình ấn tượng để đạt kết quả xuất sắc."
+                },
+                advanced: {
+                    content: "Working in ambient café environments helps minimize <span class='l2-word' onclick='openWordModal(\"procrastination\", \"/proʊˌkræs.təˈneɪ.ʃən/\", \"Sự trì hoãn\")'>procrastination</span> among students. Maintaining high <span class='l2-word' onclick='openWordModal(\"productivity\", \"/ˌproʊ.dʌkˈtɪv.ə.t̬i/\", \"Năng suất làm việc\")'>productivity</span> while avoiding mental <span class='l2-word' onclick='openWordModal(\"exhaustion\", \"/ɪɡˈzɑːs.tʃən/\", \"Sự kiệt sức\")'>exhaustion</span> requires disciplined time-blocking.",
+                    fullTranslation: "Làm việc trong không gian quán cà phê giúp sinh viên giảm thiểu thói quen trì hoãn. Duy trì năng suất cao mà không bị kiệt sức đòi hỏi sự kỷ luật về thời gian."
+                }
+            },
+            travel_flight: {
+                title: "Hành Trình Chuyến Bay Đầu Tiên",
+                category: "✈️ Du lịch & Trải nghiệm",
+                beginner: {
+                    content: "Lần đầu đi máy bay một mình, mình đến <span class='l2-word' onclick='openWordModal(\"airport\", \"/ˈer.pɔːrt/\", \"Sân bay\")'>airport</span> sớm 2 tiếng. Cầm trên tay <span class='l2-word' onclick='openWordModal(\"boarding pass\", \"/ˈbɔːr.dɪŋ ˌpæs/\", \"Thẻ lên máy bay\")'>boarding pass</span> và kéo chiếc <span class='l2-word' onclick='openWordModal(\"luggage\", \"/ˈlʌɡ.ɪdʒ/\", \"Hành lý\")'>luggage</span> nhỏ, mình cảm thấy vô cùng <span class='l2-word' onclick='openWordModal(\"excited\", \"/ɪkˈsaɪ.t̬ɪd/\", \"Hào hứng / Phấn khởi\")'>excited</span>.",
+                    fullTranslation: "Lần đầu đi máy bay một mình, mình đến sân bay sớm 2 tiếng. Cầm thẻ lên tàu bay và kéo hành lý, mình rất phấn khởi."
+                },
+                intermediate: {
+                    content: "We managed to <span class='l2-word' onclick='openWordModal(\"confirm\", \"/kənˈfɝːm/\", \"Xác nhận\")'>confirm</span> our flight reservation early. Khi đến nơi, tụi mình tự thuê xe máy để <span class='l2-word' onclick='openWordModal(\"explore\", \"/ɪkˈsplɔːr/\", \"Khám phá\")'>explore</span> các cung đường đèo mà không cần đi theo <span class='l2-word' onclick='openWordModal(\"guided tour\", \"/ˌɡaɪ.dɪd ˈtʊr/\", \"Tour có hướng dẫn viên\")'>guided tour</span>.",
+                    fullTranslation: "Chúng tôi đã xác nhận vé máy bay từ sớm. Khi đến nơi, chúng tôi tự thuê xe để khám phá các cung đường đèo mà không cần đi theo tour trọn gói."
+                },
+                advanced: {
+                    content: "Solo backpacking across uncharted destinations fosters profound <span class='l2-word' onclick='openWordModal(\"adaptability\", \"/əˌdæp.təˈbɪl.ə.t̬i/\", \"Khả năng thích ứng\")'>adaptability</span>. Navigating unexpected delays tests your patience and cultivates <span class='l2-word' onclick='openWordModal(\"self-reliance\", \"/ˌself.rɪˈlaɪ.əns/\", \"Tính tự lực\")'>self-reliance</span> under pressure.",
+                    fullTranslation: "Du lịch bụi một mình đến những vùng đất mới rèn luyện khả năng thích ứng sâu sắc. Việc xử lý những chuyến bay bị trễ thử thách lòng kiên nhẫn và tính tự lập."
+                }
+            },
+            interview_intern: {
+                title: "Thử Thách Phỏng Vấn Thực Tập",
+                category: "💼 Nghề nghiệp & Phỏng vấn",
+                beginner: {
+                    content: "Hôm nay mình diện bộ đồ lịch sự để đến buổi <span class='l2-word' onclick='openWordModal(\"interview\", \"/ˈɪn.t̬ɚ.vjuː/\", \"Buổi phỏng vấn\")'>interview</span>. Mình mang theo một bản in <span class='l2-word' onclick='openWordModal(\"resume\", \"/ˈrez.ə.meɪ/\", \"Sơ yếu lý lịch / CV\")'>resume</span> chỉn chu và luôn nở nụ cười thật <span class='l2-word' onclick='openWordModal(\"confident\", \"/ˈkɑːn.fə.dənt/\", \"Tự tin\")'>confident</span>.",
+                    fullTranslation: "Hôm nay mình mặc trang phục chỉn chu đến phỏng vấn. Mình mang theo bản in CV và luôn giữ nụ cười tự tin."
+                },
+                intermediate: {
+                    content: "The hiring manager asked me to <span class='l2-word' onclick='openWordModal(\"demonstrate\", \"/ˈdem.ən.streɪt/\", \"Chứng minh / Thể hiện\")'>demonstrate</span> my analytical skills. Mình đã khéo léo chia sẻ về dự án cũ và cách nhóm vượt qua <span class='l2-word' onclick='openWordModal(\"obstacles\", \"/ˈɑːb.stə.kəlz/\", \"Trở ngại / Khó khăn\")'>obstacles</span> để đạt đúng tiến độ.",
+                    fullTranslation: "Nhà tuyển dụng yêu cầu tôi thể hiện kỹ năng phân tích. Tôi đã chia sẻ về dự án trước đây và cách vượt qua trở ngại để hoàn thành đúng tiến độ."
+                },
+                advanced: {
+                    content: "Candidates who showcase clear <span class='l2-word' onclick='openWordModal(\"strategic vision\", \"/strəˈtiː.dʒɪk ˈvɪʒ.ən/\", \"Tầm nhìn chiến lược\")'>strategic vision</span> usually outperform peers. Articulating measurable outcomes rather than mundane duties highlights genuine <span class='l2-word' onclick='openWordModal(\"leadership potential\", \"/ˈliː.dɚ.ʃɪp poʊˈten.ʃəl/\", \"Tiềm năng lãnh đạo\")'>leadership potential</span>.",
+                    fullTranslation: "Những ứng viên thể hiện được tầm nhìn chiến lược thường vượt trội hơn. Trình bày kết quả có thể đo lường thay vì liệt kê nhiệm vụ giúp làm nổi bật tiềm năng lãnh đạo."
+                }
+            },
+            social_trend: {
+                title: "Xu Hướng Mạng Xã Hội Thịnh Hành",
+                category: "📱 Mạng xã hội & Gen Z",
+                beginner: {
+                    content: "Mỗi tối, mình thường lướt <span class='l2-word' onclick='openWordModal(\"social media\", \"/ˈsoʊ.ʃəl ˈmiː.di.ə/\", \"Mạng xã hội\")'>social media</span> để xem các clip ngắn. Thấy một thử thách nhảy đang <span class='l2-word' onclick='openWordModal(\"trending\", \"/ˈtren.dɪŋ/\", \"Thịnh hành / Đang hot\")'>trending</span>, mình đã bấm nút <span class='l2-word' onclick='openWordModal(\"share\", \"/ʃer/\", \"Chia sẻ\")'>share</span> cho bạn thân ngay.",
+                    fullTranslation: "Mỗi tối mình lướt mạng xã hội xem video. Thấy thử thách nhảy đang thịnh hành, mình lập tức chia sẻ cho bạn thân."
+                },
+                intermediate: {
+                    content: "Creating digital content requires strong <span class='l2-word' onclick='openWordModal(\"creativity\", \"/ˌkriː.eɪˈtɪv.ə.t̬i/\", \"Sự sáng tạo\")'>creativity</span> to catch viewers' attention. Bạn cần bắt kịp các âm thanh <span class='l2-word' onclick='openWordModal(\"viral\", \"/ˈvaɪ.rəl/\", \"Lan truyền chóng mặt\")'>viral</span> để tăng lượt tương tác cho kênh.",
+                    fullTranslation: "Sáng tạo nội dung số đòi hỏi nhiều sự sáng tạo để giữ chân người xem. Bạn cần bắt kịp các đoạn âm thanh viral để tăng tương tác."
+                },
+                advanced: {
+                    content: "Algorithmic curation often reinforces cognitive <span class='l2-word' onclick='openWordModal(\"echo chambers\", \"/ˈek.oʊ ˌtʃeɪm.bɚz/\", \"Phòng vang thông tin\")'>echo chambers</span>. Consuming digital media with sharp <span class='l2-word' onclick='openWordModal(\"discernment\", \"/dɪˈsɝːn.mənt/\", \"Sự sáng suốt / Chọn lọc\")'>discernment</span> safeguards against polarization.",
+                    fullTranslation: "Thuật toán đề xuất thường vô tình củng cố hiện tượng phòng vang thông tin. Tiếp nhận nội dung số với sự sáng suốt sẽ bảo vệ bạn khỏi cái nhìn phiến diện."
+                }
+            },
+            healthy_gym: {
+                title: "Lối Sống Lành Mạnh & Rèn Luyện Thể Lực",
+                category: "🏋️‍♀️ Sức khỏe & Thể thao",
+                beginner: {
+                    content: "Sáng sớm, mình dậy chạy bộ để duy trì <span class='l2-word' onclick='openWordModal(\"healthy habit\", \"/ˈhel.θi ˈhæb.ɪt/\", \"Thói quen lành mạnh\")'>healthy habit</span>. Sau đó, mình tự làm một đĩa <span class='l2-word' onclick='openWordModal(\"salad\", \"/ˈsæl.əd/\", \"Rau trộn\")'>salad</span> tươi ngon để nạp lại năng lượng cho cơ thể.",
+                    fullTranslation: "Sáng sớm mình chạy bộ để duy trì thói quen lành mạnh. Sau đó, mình tự làm đĩa rau trộn tươi ngon để nạp lại năng lượng."
+                },
+                intermediate: {
+                    content: "Maintaining a balanced <span class='l2-word' onclick='openWordModal(\"nutrition plan\", \"/nuːˈtrɪʃ.ən plæn/\", \"Kế hoạch dinh dưỡng\")'>nutrition plan</span> is equally important as intense workouts. Bạn nên uống đủ nước và ngủ đủ giấc để cơ bắp có thời gian <span class='l2-word' onclick='openWordModal(\"recover\", \"/rɪˈkʌv.ɚ/\", \"Phục hồi\")'>recover</span>.",
+                    fullTranslation: "Duy trì chế độ dinh dưỡng cân bằng cũng quan trọng như việc tập luyện. Bạn nên uống đủ nước và ngủ đủ giấc để cơ thể kịp phục hồi."
+                },
+                advanced: {
+                    content: "Consistent physical discipline directly enhances cognitive <span class='l2-word' onclick='openWordModal(\"resilience\", \"/rɪˈzɪl.jəns/\", \"Sức bền bỉ / Khả năng hồi phục\")'>resilience</span>. Overcoming physical plateaus teaches invaluable lessons in perseverance and <span class='l2-word' onclick='openWordModal(\"grit\", \"/ɡrɪt/\", \"Sự kiên định\")'>grit</span>.",
+                    fullTranslation: "Kỷ luật rèn luyện thể chất bền bỉ nâng cao khả năng chịu đựng của trí óc. Vượt qua những giai đoạn chững lại mang lại bài học quý giá về lòng kiên định."
+                }
+            },
+            ai_future: {
+                title: "Làn Sóng Trí Tuệ Nhân Tạo (AI)",
+                category: "🤖 Công nghệ & Tương lai",
+                beginner: {
+                    content: "Gần đây, mình hay dùng các công cụ <span class='l2-word' onclick='openWordModal(\"AI assistant\", \"/ˌeɪˈaɪ əˈsɪs.tənt/\", \"Trợ lý trí tuệ nhân tạo\")'>AI assistant</span> để dịch bài. Nó đưa ra câu trả lời rất <span class='l2-word' onclick='openWordModal(\"fast\", \"/fæst/\", \"Nhanh chóng\")'>fast</span> và hỗ trợ việc học của mình vô cùng tiện lợi.",
+                    fullTranslation: "Gần đây mình hay dùng các trợ lý AI để dịch bài. Chúng phản hồi rất nhanh và hỗ trợ việc học tập rất tiện lợi."
+                },
+                intermediate: {
+                    content: "Modern students are learning how to <span class='l2-word' onclick='openWordModal(\"leverage\", \"/ˈlev.ɚ.ɪdʒ/\", \"Tận dụng / Đòn bẩy\")'>leverage</span> machine learning tools effectively. Việc áp dụng đúng công nghệ sẽ giúp bạn tối ưu hóa thời gian và nâng cao <span class='l2-word' onclick='openWordModal(\"efficiency\", \"/ɪˈfɪʃ.ən.si/\", \"Hiệu suất\")'>efficiency</span> học tập.",
+                    fullTranslation: "Sinh viên ngày nay đang học cách tận dụng công nghệ máy học hiệu quả. Sử dụng đúng công cụ giúp bạn tối ưu hóa thời gian và nâng cao hiệu suất học tập."
+                },
+                advanced: {
+                    content: "The pervasive deployment of <span class='l2-word' onclick='openWordModal(\"generative algorithms\", \"/ˈdʒen.ɚ.ə.t̬ɪv ˈæl.ɡə.rɪð.əmz/\", \"Thuật toán tạo sinh\")'>generative algorithms</span> reshapes ethical paradigms in higher education. Cultivating nuanced human judgment remains irreplaceable amid automated <span class='l2-word' onclick='openWordModal(\"syntheses\", \"/ˈsɪn.θə.siːz/\", \"Sự tổng hợp dữ liệu\")'>syntheses</span>.",
+                    fullTranslation: "Sự phổ biến của các thuật toán tạo sinh đang định hình lại chuẩn mực giáo dục. Tư duy chọn lọc sâu sắc của con người vẫn là yếu tố không thể thay thế trước làn sóng tự động hóa."
+                }
             }
         };
 
@@ -409,6 +595,74 @@
                 activeBtn.classList.remove('border-transparent', 'text-slate-600');
                 activeBtn.classList.add('border-indigo-600', 'text-indigo-600', 'font-semibold');
             }
+            if (window.lucide) { lucide.createIcons(); }
+        }
+
+        // Chọn chủ đề mẫu cho Builder
+        function selectPresetTopic(key) {
+            const item = storyBuilderBank[key];
+            if (item) {
+                document.getElementById('builderTopicInput').value = item.title;
+            }
+        }
+
+        // Tạo bài học thông minh và chèn vào danh sách
+        function generateCustomStory() {
+            const inputTitle = document.getElementById('builderTopicInput').value.trim();
+            const level = document.querySelector('input[name="builderLevel"]:checked').value;
+
+            // Tìm xem có trùng chủ đề mẫu không, nếu không tạo theo template động
+            let generatedContent = "";
+            let finalCategory = "⚡ Bài học AI";
+            let finalTitle = inputTitle || "Chủ đề học tập mới";
+
+            let matchedPreset = Object.values(storyBuilderBank).find(p => p.title.toLowerCase().includes(inputTitle.toLowerCase()) || inputTitle.toLowerCase().includes(p.title.toLowerCase()));
+
+            if (matchedPreset && matchedPreset[level]) {
+                finalTitle = matchedPreset.title;
+                finalCategory = matchedPreset.category;
+                generatedContent = matchedPreset[level].content;
+            } else {
+                if (level === 'beginner') {
+                    generatedContent = `Hôm nay mình trải nghiệm chủ đề <b>"${finalTitle}"</b>. Không gian vô cùng <span class='l2-word' onclick='openWordModal("wonderful", "/ˈwʌn.dɚ.fəl/", "Tuyệt vời")'>wonderful</span> và đem lại cho mình nhiều <span class='l2-word' onclick='openWordModal("inspiration", "/ˌɪn.spəˈreɪ.ʃən/", "Nguồn cảm hứng")'>inspiration</span> để bắt đầu ngày mới hiệu quả.`;
+                } else if (level === 'intermediate') {
+                    generatedContent = `Regarding our topic <b>"${finalTitle}"</b>, we should <span class='l2-word' onclick='openWordModal("collaborate", "/kəˈlæb.ə.reɪt/", "Hợp tác / Phối hợp")'>collaborate</span> to share viewpoints. Việc chia sẻ góc nhìn mở giúp mọi người cảm thấy <span class='l2-word' onclick='openWordModal("empowered", "/ɪmˈpaʊ.ɚd/", "Được truyền động lực")'>empowered</span> hơn trong công việc.`;
+                } else {
+                    generatedContent = `Delving into <b>"${finalTitle}"</b> requires thorough <span class='l2-word' onclick='openWordModal("investigation", "/ɪnˌves.təˈɡeɪ.ʃən/", "Sự nghiên cứu / Điều tra kỹ")'>investigation</span>. Developing structured arguments ensures academic <span class='l2-word' onclick='openWordModal("authenticity", "/ˌɑː.θenˈtɪs.ə.t̬i/", "Tính xác thực / Độ tin cậy")'>authenticity</span> across diverse learning domains.`;
+                }
+            }
+
+            const newStoryObj = {
+                id: "ai_" + Date.now(),
+                title: finalTitle + " (Tạo bởi AI)",
+                category: finalCategory,
+                content: generatedContent,
+                fullTranslation: "Đoạn văn được hệ thống Smart Story Builder tự động tổng hợp."
+            };
+
+            // Thêm bài học mới vào thư viện đang chạy
+            if (typeof storyLibrary !== 'undefined') {
+                if (!storyLibrary[level]) { storyLibrary[level] = []; }
+                storyLibrary[level].unshift(newStoryObj);
+            }
+
+            // Hiển thị khung xem trước
+            document.getElementById('previewTitle').innerText = newStoryObj.title;
+            document.getElementById('previewBody').innerHTML = newStoryObj.content;
+            document.getElementById('builderPreviewArea').classList.remove('hidden');
+
+            // Cập nhật trạng thái và đồng bộ
+            setRatio(level);
+            StoryBridgeApp.state.currentStoryIndex = 0;
+            renderStoryList();
+
+            showToast("Đã tạo bài học mới thành công!");
+            if (window.lucide) { lucide.createIcons(); }
+        }
+
+        function readNewGeneratedStory() {
+            switchTab('reader');
+            renderCurrentStory();
         }
 
         function openWordModal(word, phonetic, meaning) {
@@ -481,14 +735,12 @@
                 return;
             }
 
-            // Tách các từ trong văn bản
             const words = text.match(/[\p{L}0-9'-]+/gu) || [];
             if (words.length === 0) {
                 showToast("Không tìm thấy từ hợp lệ để phân tích!");
                 return;
             }
 
-            // Nhận diện từ tiếng Anh (chỉ chứa chữ cái ASCII, không có dấu tiếng Việt)
             const englishWordRegex = /^[A-Za-z]+$/;
             let englishCount = 0;
             const detectedEnglishWords = [];
@@ -538,9 +790,7 @@
                 `;
             }
 
-            if (window.lucide) {
-                lucide.createIcons();
-            }
+            if (window.lucide) { lucide.createIcons(); }
             showToast("Đã phân tích xong nhật ký!");
         }
 
