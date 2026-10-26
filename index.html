@@ -135,7 +135,7 @@
                 </button>
                 <button onclick="switchTab('practice')" id="tab-practice" class="nav-tab py-2 px-3 rounded-lg text-sm font-medium border-b-2 border-transparent text-slate-600 flex items-center space-x-2">
                     <i data-lucide="sparkles" class="w-4 h-4"></i>
-                    <span>Thẻ Từ & Flashcards</span>
+                    <span>Thẻ Từ & Flashcards SRS</span>
                 </button>
             </nav>
         </div>
@@ -174,17 +174,17 @@
                     </div>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center"><i data-lucide="flame" class="w-5 h-5"></i></div>
+                    <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center"><i data-lucide="clock" class="w-5 h-5"></i></div>
                     <div>
-                        <div class="text-2xl font-bold text-slate-900">7 Ngày</div>
-                        <div class="text-xs text-slate-500">Chuỗi học liên tiếp</div>
+                        <div class="text-2xl font-bold text-rose-600" id="dueWordsCount">0</div>
+                        <div class="text-xs text-slate-500">Cần ôn lại hôm nay</div>
                     </div>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center"><i data-lucide="award" class="w-5 h-5"></i></div>
                     <div>
-                        <div class="text-2xl font-bold text-slate-900">92%</div>
-                        <div class="text-xs text-slate-500">Độ nhớ từ vựng</div>
+                        <div class="text-2xl font-bold text-slate-900" id="masteredWordsCount">0</div>
+                        <div class="text-xs text-slate-500">Từ đã nắm vững 🏆</div>
                     </div>
                 </div>
             </div>
@@ -339,16 +339,31 @@
             </div>
         </section>
 
-        <!-- TAB 5: PRACTICE & MINI GAME -->
+        <!-- TAB 5: PRACTICE & SPACED REPETITION (SRS) FLASHCARDS -->
         <section id="view-practice" class="hidden space-y-6">
-            <div class="flex justify-between items-center">
-                <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-                    <i data-lucide="layers" class="w-5 h-5 text-indigo-600"></i>
-                    <span>Thẻ Từ Vựng Lật Mặt (Flashcards)</span>
-                </h3>
-                <span class="text-xs text-slate-500">Nhấp vào thẻ để lật xem nghĩa, nhấn loa để nghe phát âm</span>
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                        <i data-lucide="layers" class="w-5 h-5 text-indigo-600"></i>
+                        <span>Thẻ Từ Vựng & Lặp Lại Ngắt Quãng (SRS)</span>
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Thuật toán ghi nhớ tự động xếp lịch ôn lại sau 1 ngày, 3 ngày, 7 ngày, 14 ngày theo độ nhớ của bạn.</p>
+                </div>
+                
+                <!-- BỘ LỌC FLASHCARDS -->
+                <div class="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 text-xs">
+                    <button onclick="setSrsFilter('all')" id="btnSrsAll" class="px-3 py-1.5 rounded-xl font-bold bg-white text-indigo-700 shadow-xs">
+                        Tất cả (<span id="srsTotalBadge">0</span>)
+                    </button>
+                    <button onclick="setSrsFilter('due')" id="btnSrsDue" class="px-3 py-1.5 rounded-xl font-medium text-slate-600 hover:text-indigo-600 flex items-center gap-1">
+                        <i data-lucide="alarm-clock" class="w-3.5 h-3.5 text-rose-500"></i>
+                        <span>Cần ôn tập (<span id="srsDueBadge">0</span>)</span>
+                    </button>
+                </div>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" id="flashcardsGrid"></div>
+
+            <!-- GRID FLASHCARDS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5" id="flashcardsGrid"></div>
         </section>
     </main>
 
@@ -370,7 +385,7 @@
             </div>
             <div class="flex space-x-3">
                 <button onclick="closeModal()" class="flex-1 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50">Đóng</button>
-                <button onclick="saveWordFromModal()" class="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-md hover:bg-indigo-700">Lưu Từ Này</button>
+                <button onclick="saveWordFromModal()" class="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-md hover:bg-indigo-700">Lưu Vào Sổ Từ (SRS)</button>
             </div>
         </div>
     </div>
@@ -383,13 +398,13 @@
     <!-- MAIN JAVASCRIPT LOGIC -->
     <script>
         // ==========================================
-        // CẤU HÌNH SUPABASE (Đã cập nhật theo Project của bạn)
+        // CẤU HÌNH SUPABASE
         // ==========================================
         const SUPABASE_URL = "https://hoshkrvrebczvedmpxgz.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhvc2hrcnZyZWJjenZlZG1weGd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4Njg1NTgsImV4cCI6MjEwODQ0NDU1OH0.F6JJJBaaesj4lf8HXfC8mPKfUladPzRS723qzMZEwAo";
         
         let supabaseClient = null;
-        if (typeof supabase !== 'undefined' && SUPABASE_URL !== "https://your-project-id.supabase.co") {
+        if (typeof supabase !== 'undefined') {
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
 
@@ -399,6 +414,7 @@
                 currentLevel: 'beginner',
                 currentStoryIndex: 0,
                 lastGeneratedStoryIndex: null,
+                srsFilter: 'all', // 'all' hoặc 'due'
                 savedVocabulary: []
             },
             async init() {
@@ -465,7 +481,12 @@
                     .order('created_at', { ascending: false });
 
                 if (!error && data) {
-                    this.state.savedVocabulary = data;
+                    this.state.savedVocabulary = data.map(item => ({
+                        ...item,
+                        srs_level: item.srs_level || 0,
+                        next_review_at: item.next_review_at || new Date().toISOString()
+                    }));
+                    this.updateStats();
                     renderSavedVocabulary();
                     renderFlashcards();
                 }
@@ -474,20 +495,41 @@
             loadFallbackVocab() {
                 const stored = localStorage.getItem('storybridge_vi_en_vocab');
                 if (stored) {
-                    try { this.state.savedVocabulary = JSON.parse(stored); } catch(e){}
+                    try { 
+                        this.state.savedVocabulary = JSON.parse(stored); 
+                    } catch(e){}
                 } else {
+                    const now = new Date().toISOString();
                     this.state.savedVocabulary = [
-                        { word: "campus", phonetic: "/ˈkæm.pəs/", meaning: "Khuôn viên trường" },
-                        { word: "presentation", phonetic: "/ˌprez.enˈteɪ.ʃən/", meaning: "Bài thuyết trình" },
-                        { word: "deadline", phonetic: "/ˈded.laɪn/", meaning: "Hạn chót hoàn thành" }
+                        { id: 'local_1', word: "campus", phonetic: "/ˈkæm.pəs/", meaning: "Khuôn viên trường", srs_level: 0, next_review_at: now },
+                        { id: 'local_2', word: "presentation", phonetic: "/ˌprez.enˈteɪ.ʃən/", meaning: "Bài thuyết trình", srs_level: 1, next_review_at: now },
+                        { id: 'local_3', word: "deadline", phonetic: "/ˈded.laɪn/", meaning: "Hạn chót hoàn thành", srs_level: 2, next_review_at: new Date(Date.now() + 86400000 * 2).toISOString() }
                     ];
                 }
+                this.updateStats();
                 renderSavedVocabulary();
                 renderFlashcards();
             },
 
             saveVocabLocal() {
                 localStorage.setItem('storybridge_vi_en_vocab', JSON.stringify(this.state.savedVocabulary));
+                this.updateStats();
+            },
+
+            updateStats() {
+                const now = new Date();
+                const total = this.state.savedVocabulary.length;
+                const dueList = this.state.savedVocabulary.filter(v => new Date(v.next_review_at || now) <= now);
+                const masteredList = this.state.savedVocabulary.filter(v => (v.srs_level || 0) >= 4);
+
+                document.getElementById('savedWordsCount').innerText = total;
+                document.getElementById('dueWordsCount').innerText = dueList.length;
+                document.getElementById('masteredWordsCount').innerText = masteredList.length;
+
+                const totalBadge = document.getElementById('srsTotalBadge');
+                const dueBadge = document.getElementById('srsDueBadge');
+                if (totalBadge) totalBadge.innerText = total;
+                if (dueBadge) dueBadge.innerText = dueList.length;
             }
         };
 
@@ -730,10 +772,13 @@
         async function saveWordFromModal() {
             if (!currentWordModalData) return;
 
+            const now = new Date().toISOString();
             const wordItem = {
                 word: currentWordModalData.word,
                 phonetic: currentWordModalData.phonetic,
-                meaning: currentWordModalData.meaning
+                meaning: currentWordModalData.meaning,
+                srs_level: 0,
+                next_review_at: now
             };
 
             if (supabaseClient && StoryBridgeApp.state.currentUser) {
@@ -750,11 +795,14 @@
                 }
 
                 await StoryBridgeApp.fetchCloudVocab();
-                showToast(`Đã lưu "${wordItem.word}" lên đám mây ☁️`);
+                showToast(`Đã lưu "${wordItem.word}" vào lộ trình SRS ☁️`);
             } else {
                 const exists = StoryBridgeApp.state.savedVocabulary.some(v => v.word.toLowerCase() === wordItem.word.toLowerCase());
                 if (!exists) {
-                    StoryBridgeApp.state.savedVocabulary.unshift(wordItem);
+                    StoryBridgeApp.state.savedVocabulary.unshift({
+                        id: 'local_' + Date.now(),
+                        ...wordItem
+                    });
                     StoryBridgeApp.saveVocabLocal();
                     renderSavedVocabulary();
                     renderFlashcards();
@@ -769,45 +817,176 @@
         function renderSavedVocabulary() {
             const container = document.getElementById('dashVocabList');
             if (!container) return;
-            document.getElementById('savedWordsCount').innerText = StoryBridgeApp.state.savedVocabulary.length;
             container.innerHTML = '';
 
             StoryBridgeApp.state.savedVocabulary.slice(0, 5).forEach(item => {
                 const el = document.createElement('div');
                 el.className = 'p-3 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center';
-                el.innerHTML = `<span class="text-sm font-bold text-indigo-700">${item.word}</span><span class="text-xs text-slate-600">${item.meaning}</span>`;
+                el.innerHTML = `
+                    <div>
+                        <span class="text-sm font-bold text-indigo-700">${item.word}</span>
+                        <span class="text-[10px] text-slate-400 block">${item.phonetic || ''}</span>
+                    </div>
+                    <span class="text-xs text-slate-600 font-medium">${item.meaning}</span>
+                `;
                 container.appendChild(el);
             });
+        }
+
+        // =========================================================================
+        // LOGIC LẶP LẠI NGẮT QUÃNG (SPACED REPETITION SYSTEM - SRS)
+        // =========================================================================
+        function setSrsFilter(filter) {
+            StoryBridgeApp.state.srsFilter = filter;
+            const btnAll = document.getElementById('btnSrsAll');
+            const btnDue = document.getElementById('btnSrsDue');
+
+            if (filter === 'all') {
+                btnAll.className = "px-3 py-1.5 rounded-xl font-bold bg-white text-indigo-700 shadow-xs";
+                btnDue.className = "px-3 py-1.5 rounded-xl font-medium text-slate-600 hover:text-indigo-600 flex items-center gap-1";
+            } else {
+                btnDue.className = "px-3 py-1.5 rounded-xl font-bold bg-rose-50 text-rose-700 shadow-xs flex items-center gap-1";
+                btnAll.className = "px-3 py-1.5 rounded-xl font-medium text-slate-600 hover:text-indigo-600";
+            }
+            renderFlashcards();
+        }
+
+        // Xử lý đánh giá: "Cần ôn lại" (Again) hoặc "Đã thuộc" (Good)
+        async function reviewWord(wordId, isMastered) {
+            const item = StoryBridgeApp.state.savedVocabulary.find(v => (v.id === wordId || v.word === wordId));
+            if (!item) return;
+
+            let currentLevel = item.srs_level || 0;
+            let nextReviewDate = new Date();
+
+            if (!isMastered) {
+                // Nếu chưa thuộc: Reset về Level 0, ôn lại sau 1 ngày (hoặc ngay ngày mai)
+                currentLevel = 0;
+                nextReviewDate.setDate(nextReviewDate.getDate() + 1);
+                showToast(`"${item.word}": Đã lên lịch ôn lại vào ngày mai!`);
+            } else {
+                // Nếu đã thuộc: Tăng bậc giãn cách theo Ebbinghaus (1 -> 3 -> 7 -> 14 ngày)
+                currentLevel = currentLevel + 1;
+                let daysToAdd = 1;
+                if (currentLevel === 1) daysToAdd = 1;      // Bậc 1: Sau 1 ngày
+                else if (currentLevel === 2) daysToAdd = 3; // Bậc 2: Sau 3 ngày
+                else if (currentLevel === 3) daysToAdd = 7; // Bậc 3: Sau 7 ngày
+                else daysToAdd = 14;                        // Bậc 4+: Sau 14 ngày
+
+                nextReviewDate.setDate(nextReviewDate.getDate() + daysToAdd);
+                showToast(`"${item.word}": Tuyệt vời! Ôn lại sau ${daysToAdd} ngày.`);
+            }
+
+            const updatedFields = {
+                srs_level: currentLevel,
+                next_review_at: nextReviewDate.toISOString(),
+                last_reviewed_at: new Date().toISOString()
+            };
+
+            // Cập nhật State nội tại
+            Object.assign(item, updatedFields);
+
+            // Đồng bộ Supabase nếu đã đăng nhập
+            if (supabaseClient && StoryBridgeApp.state.currentUser && item.id && !item.id.toString().startsWith('local_')) {
+                await supabaseClient
+                    .from('user_vocab')
+                    .update(updatedFields)
+                    .eq('id', item.id);
+            } else {
+                StoryBridgeApp.saveVocabLocal();
+            }
+
+            StoryBridgeApp.updateStats();
+            renderFlashcards();
         }
 
         function renderFlashcards() {
             const grid = document.getElementById('flashcardsGrid');
             if (!grid) return;
             grid.innerHTML = '';
-            StoryBridgeApp.state.savedVocabulary.forEach(card => {
+
+            const now = new Date();
+            let cards = StoryBridgeApp.state.savedVocabulary;
+
+            if (StoryBridgeApp.state.srsFilter === 'due') {
+                cards = cards.filter(v => new Date(v.next_review_at || now) <= now);
+            }
+
+            if (cards.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 text-center bg-white rounded-3xl border border-slate-200">
+                        <i data-lucide="sparkles" class="w-10 h-10 text-emerald-500 mx-auto mb-2"></i>
+                        <h4 class="font-bold text-slate-800 text-base">Bạn đã hoàn thành mục tiêu ôn tập!</h4>
+                        <p class="text-xs text-slate-400 mt-1">Không có từ vựng nào cần ôn lại lúc này. Hãy đọc thêm bài mới hoặc chuyển sang bộ lọc "Tất cả".</p>
+                    </div>
+                `;
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
+
+            cards.forEach(card => {
                 const cardEl = document.createElement('div');
-                cardEl.className = 'p-5 bg-white border border-slate-200 rounded-2xl shadow-sm text-center cursor-pointer hover:border-indigo-300 transition-all relative group';
-                
-                cardEl.onclick = function(e) {
-                    if (e.target.closest('.audio-btn')) return;
-                    const meaningEl = this.querySelector('.card-meaning');
-                    meaningEl.classList.toggle('hidden');
-                };
+                cardEl.className = 'p-5 bg-white border border-slate-200 rounded-3xl shadow-xs hover:shadow-md transition-all flex flex-col justify-between';
+
+                const srsLvl = card.srs_level || 0;
+                let badgeText = "🌱 Mới học";
+                let badgeClass = "bg-slate-100 text-slate-600";
+
+                if (srsLvl === 1) { badgeText = "⚡ Sau 1 ngày"; badgeClass = "bg-amber-50 text-amber-700"; }
+                else if (srsLvl === 2) { badgeText = "🎯 Sau 3 ngày"; badgeClass = "bg-indigo-50 text-indigo-700"; }
+                else if (srsLvl === 3) { badgeText = "🚀 Sau 7 ngày"; badgeClass = "bg-purple-50 text-purple-700"; }
+                else if (srsLvl >= 4) { badgeText = "🏆 Đã thuộc"; badgeClass = "bg-emerald-50 text-emerald-700 font-bold"; }
+
+                const isDue = new Date(card.next_review_at || now) <= now;
 
                 cardEl.innerHTML = `
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="text-[10px] text-slate-400 font-medium">Nhấp để lật</span>
-                        <button onclick="speakWord('${card.word}')" class="audio-btn p-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all" title="Nghe phát âm">
-                            <i data-lucide="volume-2" class="w-4 h-4"></i>
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-[10px] px-2 py-0.5 rounded-md font-semibold ${badgeClass}">${badgeText}</span>
+                            <div class="flex items-center gap-1">
+                                ${isDue ? '<span class="w-2 h-2 rounded-full bg-rose-500" title="Cần ôn hôm nay"></span>' : ''}
+                                <button onclick="speakWord('${card.word}')" class="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all" title="Nghe phát âm">
+                                    <i data-lucide="volume-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Vùng nhấp để lật mặt xem nghĩa -->
+                        <div class="cursor-pointer py-2 text-center" onclick="toggleFlashcardMeaning(this)">
+                            <h4 class="text-xl font-bold text-slate-900">${card.word}</h4>
+                            <p class="text-xs text-indigo-500 font-mono mt-0.5">${card.phonetic || ''}</p>
+                            <p class="card-meaning hidden text-sm font-semibold text-emerald-800 bg-emerald-50 py-2 px-3 rounded-xl mt-3 border border-emerald-100">${card.meaning}</p>
+                            <span class="flip-hint text-[11px] text-slate-400 block mt-2 font-medium">Nhấp để lật xem nghĩa 🔄</span>
+                        </div>
+                    </div>
+
+                    <!-- 2 NÚT ĐÁNH GIÁ SPACED REPETITION (SRS) -->
+                    <div class="pt-4 mt-3 border-t border-slate-100 grid grid-cols-2 gap-2">
+                        <button onclick="reviewWord('${card.id || card.word}', false)" class="py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                            <span>Cần ôn lại</span>
+                        </button>
+                        <button onclick="reviewWord('${card.id || card.word}', true)" class="py-2 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5">
+                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                            <span>Đã thuộc</span>
                         </button>
                     </div>
-                    <h4 class="text-lg font-bold text-indigo-600">${card.word}</h4>
-                    <p class="text-xs text-slate-400 font-mono mt-0.5">${card.phonetic}</p>
-                    <p class="card-meaning hidden text-xs font-semibold text-emerald-700 bg-emerald-50 py-1.5 px-2.5 rounded-lg mt-3 border border-emerald-100">${card.meaning}</p>
                 `;
                 grid.appendChild(cardEl);
             });
             if (window.lucide) { lucide.createIcons(); }
+        }
+
+        function toggleFlashcardMeaning(el) {
+            const meaning = el.querySelector('.card-meaning');
+            const hint = el.querySelector('.flip-hint');
+            if (meaning.classList.contains('hidden')) {
+                meaning.classList.remove('hidden');
+                hint.classList.add('hidden');
+            } else {
+                meaning.classList.add('hidden');
+                hint.classList.remove('hidden');
+            }
         }
 
         // PHÂN TÍCH NHẬT KÝ BẰNG GEMINI 1.5 FLASH SERVERLESS
