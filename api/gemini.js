@@ -27,49 +27,33 @@ Chỉ trả về DUY NHẤT chuỗi JSON (ngắn gọn, không markdown):
       return res.status(400).json({ error: 'Loại tác vụ không hợp lệ' });
     }
 
-    // Danh sách model ưu tiên xử lý khi cụm chính bị nghẽn (503 / high demand)
-    const candidateModels = ['gemini-3.8-flash', 'gemini-2.5-flash'];
-    let lastError = null;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
 
-    for (const modelName of candidateModels) {
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-
-      try {
-        const response = await fetch(geminiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              temperature: 0.5,
-              maxOutputTokens: 400,
-              responseMimeType: "application/json"
-            }
-          })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          lastError = data.error?.message || `Lỗi máy chủ (${response.status})`;
-          // Nếu model bị quá tải hoặc không khả dụng, tiếp tục vòng lặp thử model dự phòng
-          if (response.status === 503 || lastError.includes('high demand') || lastError.includes('not available')) {
-            continue;
-          }
-          return res.status(response.status).json({ error: lastError });
+    const response = await fetch(geminiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.5,
+          maxOutputTokens: 400,
+          responseMimeType: "application/json"
         }
+      })
+    });
 
-        let rawResult = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-        rawResult = rawResult.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+    const data = await response.json();
 
-        const parsedData = JSON.parse(rawResult);
-        return res.status(200).json(parsedData);
-      } catch (err) {
-        lastError = err.message;
-      }
+    if (!response.ok) {
+      return res.status(response.status).json({ error: data.error?.message || 'Lỗi từ Gemini API' });
     }
 
-    return res.status(503).json({ error: `Máy chủ AI đang có lượng truy cập cao: ${lastError}. Vui lòng thử lại sau giây lát!` });
+    let rawResult = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+    rawResult = rawResult.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+
+    const parsedData = JSON.parse(rawResult);
+    return res.status(200).json(parsedData);
+
   } catch (err) {
     return res.status(500).json({ error: 'Lỗi xử lý: ' + err.message });
   }
