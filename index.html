@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StoryBridge - Nền Tảng Học Translanguaging Việt - Anh</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS Production Build -->
+    <link rel="stylesheet" href="style.css">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,37 +18,6 @@
 
     <!-- Nhúng file dữ liệu bài học bên ngoài -->
     <script src="data.js"></script>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Be Vietnam Pro"', 'sans-serif'],
-                        heading: ['"Plus Jakarta Sans"', '"Be Vietnam Pro"', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .l2-word {
-            display: inline-block;
-            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-            color: #3730a3;
-            padding: 2px 8px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid #a5b4fc;
-            margin: 0 2px;
-        }
-        .l2-word:hover {
-            transform: translateY(-2px) scale(1.03);
-            background: linear-gradient(135deg, #c7d2fe 0%, #a5b4fc 100%);
-        }
-    </style>
 </head>
 <body class="h-full text-slate-800 bg-slate-50 flex flex-col font-sans antialiased">
 
