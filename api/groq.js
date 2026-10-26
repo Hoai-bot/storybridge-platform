@@ -70,7 +70,7 @@ Cấu trúc JSON bắt buộc:
       return res.status(400).json({ error: 'Loại tác vụ không hợp lệ' });
     }
 
-    const response = await fetch("[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
