@@ -985,7 +985,7 @@
             }
         }
 
-        // PHÂN TÍCH NHẬT KÝ BẰNG GEMINI (TIMEOUT 25S CHỐNG NGẮT SỚM VÀ XOAY TREO)
+        // PHÂN TÍCH NHẬT KÝ BẰNG GEMINI (TIMEOUT 45S ĐẢM BẢO KHÔNG BỊ NGẮT KẾT NỐI SỚM)
         async function analyzeJournalWithAI(e) {
             const text = document.getElementById('journalInput').value.trim();
             const feedback = document.getElementById('aiFeedback');
@@ -1004,9 +1004,9 @@
                 if (window.lucide) lucide.createIcons();
             }
 
-            // Tự động ngắt request nếu quá 25 giây để AI có đủ thời gian phản hồi
+            // Tự động ngắt request nếu quá 45 giây để AI có đủ thời gian phản hồi
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 25000);
+            const timeoutId = setTimeout(() => controller.abort(), 45000);
 
             try {
                 const response = await fetch('/api/gemini', {
@@ -1040,7 +1040,7 @@
             } catch (err) {
                 console.error("Lỗi phân tích:", err);
                 const isTimeout = err.name === 'AbortError';
-                const errorMsg = isTimeout ? "Quá thời gian phản hồi (Timeout 25s). Máy chủ Google đang bận, bạn thử lại nhé!" : err.message;
+                const errorMsg = isTimeout ? "Quá thời gian phản hồi (Timeout 45s). Máy chủ Google đang bận, bạn thử lại nhé!" : err.message;
                 
                 showToast(errorMsg);
                 feedback.classList.remove('hidden');
