@@ -954,7 +954,7 @@
             }
         }
 
-        // PHÂN TÍCH NHẬT KÝ BẰNG GEMINI (TIMEOUT 45S ĐẢM BẢO KHÔNG BỊ NGẮT KẾT NỐI SỚM)
+        // PHÂN TÍCH NHẬT KÝ BẰNG GEMINI
         async function analyzeJournalWithAI(e) {
             const text = document.getElementById('journalInput').value.trim();
             const feedback = document.getElementById('aiFeedback');
@@ -973,7 +973,6 @@
                 if (window.lucide) lucide.createIcons();
             }
 
-            // Tự động ngắt request nếu quá 45 giây để AI có đủ thời gian phản hồi
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 45000);
 
@@ -989,7 +988,15 @@
                 });
 
                 clearTimeout(timeoutId);
-                const data = await response.json();
+
+                // Đọc raw text trước để tránh lỗi Unexpected token nếu server trả về HTML
+                const responseText = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch {
+                    throw new Error(responseText.slice(0, 150) || `Lỗi máy chủ (${response.status})`);
+                }
 
                 if (!response.ok) {
                     throw new Error(data.error || `Lỗi máy chủ (${response.status})`);
@@ -1016,7 +1023,7 @@
                 feedback.innerHTML = `
                     <div class="flex items-center gap-2 font-bold text-rose-700">
                         <i data-lucide="alert-triangle" class="w-4 h-4"></i>
-                        <span>Thông báo:</span>
+                        <span>Thông báo lỗi:</span>
                     </div>
                     <p class="text-xs text-rose-600 mt-1">${errorMsg}</p>
                 `;
