@@ -64,8 +64,8 @@ Trả về DUY NHẤT một chuỗi JSON hợp lệ (không kèm Markdown codebl
       return res.status(400).json({ error: 'Loại tác vụ không hợp lệ' });
     }
 
-    // Gọi trực tiếp REST API của Gemini 1.5 Flash
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // Endpoint chính thức sử dụng gemini-2.0-flash
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     
     const response = await fetch(geminiUrl, {
       method: 'POST',
