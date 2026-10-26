@@ -3,7 +3,7 @@
   "cleanUrls": true,
   "outputDirectory": ".",
   "functions": {
-    "api/gemini.js": {
+    "api/groq.js": {
       "maxDuration": 30
     }
   },
