@@ -651,12 +651,16 @@
         // TẠO BÀI HỌC BẰNG GROQ SERVERLESS
         async function generateCustomStory(e) {
             const topicInput = document.getElementById('builderTopicInput').value.trim();
-            const level = document.querySelector('input[name="builderLevel"]:checked').value;
+            
+            // Lấy chính xác radio button đang được checked
+            const selectedLevelInput = document.querySelector('input[name="builderLevel"]:checked');
+            const level = selectedLevelInput ? selectedLevelInput.value : 'beginner';
+            
             const btn = (e && e.currentTarget) ? e.currentTarget : document.querySelector('#view-builder button');
 
             const originalText = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>AI đang sáng tạo bài học...</span>`;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>AI đang tạo bài cấp độ ${level}...</span>`;
             if (window.lucide) lucide.createIcons();
 
             try {
@@ -682,26 +686,29 @@
 
                 const newStoryObj = {
                     id: "ai_" + Date.now(),
-                    title: data.title + " (Groq AI)",
-                    category: "⚡ " + data.category,
+                    title: data.title + ` (${level.toUpperCase()})`,
+                    category: "⚡ " + (data.category || level),
                     content: data.content,
                     fullTranslation: data.fullTranslation
                 };
 
+                // Đảm bảo thư viện cho cấp độ này tồn tại và thêm vào đầu danh sách
                 if (typeof storyLibrary !== 'undefined') {
                     if (!storyLibrary[level]) storyLibrary[level] = [];
                     storyLibrary[level].unshift(newStoryObj);
                 }
 
+                // Hiển thị khung xem trước
                 document.getElementById('previewTitle').innerText = newStoryObj.title;
                 document.getElementById('previewBody').innerHTML = newStoryObj.content;
                 document.getElementById('builderPreviewArea').classList.remove('hidden');
 
+                // Đồng bộ thanh tỷ lệ trên header theo cấp độ vừa tạo
                 setRatio(level);
                 StoryBridgeApp.state.currentStoryIndex = 0;
                 renderStoryList();
 
-                showToast("Groq AI đã tạo xong bài học!");
+                showToast(`Đã tạo xong bài học cấp độ ${level}!`);
             } catch (err) {
                 showToast("Lỗi: " + err.message);
             } finally {
