@@ -60,7 +60,8 @@ Chỉ trả về DUY NHẤT một chuỗi JSON thuần:
       return res.status(400).json({ error: 'Loại tác vụ không hợp lệ' });
     }
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    // Endpoint chính thức dùng model gemini-3.8-flash theo yêu cầu của Google API
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
 
     const response = await fetch(geminiUrl, {
       method: 'POST',
@@ -81,7 +82,6 @@ Chỉ trả về DUY NHẤT một chuỗi JSON thuần:
     }
 
     let rawResult = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-    // Loại bỏ markdown ```json nếu AI vô tình sinh ra
     rawResult = rawResult.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
 
     const parsedData = JSON.parse(rawResult);
