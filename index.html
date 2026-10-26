@@ -249,7 +249,7 @@
             </div>
         </section>
 
-        <!-- TAB 3: SMART STORY BUILDER (GEMINI 1.5 FLASH SERVERLESS) -->
+        <!-- TAB 3: SMART STORY BUILDER (GEMINI SERVERLESS) -->
         <section id="view-builder" class="hidden space-y-6">
             <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
                 <div>
@@ -257,9 +257,9 @@
                         <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
                             <i data-lucide="sparkles" class="w-5 h-5"></i>
                         </div>
-                        <h2 class="text-xl font-bold text-slate-900">Trình Tạo Bài Học Thông Minh (Gemini 1.5 Flash AI)</h2>
+                        <h2 class="text-xl font-bold text-slate-900">Trình Tạo Bài Học Thông Minh (Gemini AI)</h2>
                     </div>
-                    <p class="text-xs text-slate-500 mt-1">Nhập bất kỳ ý tưởng hoặc chọn chủ đề mẫu. Gemini 1.5 Flash sẽ tự động sinh bài đọc đan ngữ với từ vựng IPA tương ứng theo đúng cấp độ!</p>
+                    <p class="text-xs text-slate-500 mt-1">Nhập bất kỳ ý tưởng hoặc chọn chủ đề mẫu. Gemini sẽ tự động sinh bài đọc đan ngữ với từ vựng IPA tương ứng theo đúng cấp độ!</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -322,7 +322,7 @@
             </div>
         </section>
 
-        <!-- TAB 4: JOURNAL & AI ASSIST (GEMINI 1.5 FLASH SERVERLESS) -->
+        <!-- TAB 4: JOURNAL & AI ASSIST (GEMINI SERVERLESS) -->
         <section id="view-journal" class="hidden space-y-6">
             <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
                 <div class="flex items-center gap-2">
@@ -679,7 +679,7 @@
             }
         }
 
-        // TẠO BÀI HỌC BẰNG GEMINI 1.5 FLASH SERVERLESS
+        // TẠO BÀI HỌC BẰNG GEMINI SERVERLESS
         async function generateCustomStory(e) {
             const topicInput = document.getElementById('builderTopicInput').value.trim();
             const level = document.querySelector('input[name="builderLevel"]:checked').value;
@@ -725,7 +725,7 @@
                 StoryBridgeApp.state.currentStoryIndex = 0;
                 renderStoryList();
 
-                showToast("Gemini 1.5 Flash đã tạo xong bài học!");
+                showToast("Gemini đã tạo xong bài học!");
             } catch (err) {
                 showToast("Lỗi: " + err.message);
             } finally {
@@ -860,18 +860,16 @@
             let nextReviewDate = new Date();
 
             if (!isMastered) {
-                // Nếu chưa thuộc: Reset về Level 0, ôn lại sau 1 ngày (hoặc ngay ngày mai)
                 currentLevel = 0;
                 nextReviewDate.setDate(nextReviewDate.getDate() + 1);
                 showToast(`"${item.word}": Đã lên lịch ôn lại vào ngày mai!`);
             } else {
-                // Nếu đã thuộc: Tăng bậc giãn cách theo Ebbinghaus (1 -> 3 -> 7 -> 14 ngày)
                 currentLevel = currentLevel + 1;
                 let daysToAdd = 1;
-                if (currentLevel === 1) daysToAdd = 1;      // Bậc 1: Sau 1 ngày
-                else if (currentLevel === 2) daysToAdd = 3; // Bậc 2: Sau 3 ngày
-                else if (currentLevel === 3) daysToAdd = 7; // Bậc 3: Sau 7 ngày
-                else daysToAdd = 14;                        // Bậc 4+: Sau 14 ngày
+                if (currentLevel === 1) daysToAdd = 1;
+                else if (currentLevel === 2) daysToAdd = 3;
+                else if (currentLevel === 3) daysToAdd = 7;
+                else daysToAdd = 14;
 
                 nextReviewDate.setDate(nextReviewDate.getDate() + daysToAdd);
                 showToast(`"${item.word}": Tuyệt vời! Ôn lại sau ${daysToAdd} ngày.`);
@@ -883,10 +881,8 @@
                 last_reviewed_at: new Date().toISOString()
             };
 
-            // Cập nhật State nội tại
             Object.assign(item, updatedFields);
 
-            // Đồng bộ Supabase nếu đã đăng nhập
             if (supabaseClient && StoryBridgeApp.state.currentUser && item.id && !item.id.toString().startsWith('local_')) {
                 await supabaseClient
                     .from('user_vocab')
@@ -989,7 +985,7 @@
             }
         }
 
-        // PHÂN TÍCH NHẬT KÝ BẰNG GEMINI 1.5 FLASH SERVERLESS (BẮT LỖI CHI TIẾT)
+        // PHÂN TÍCH NHẬT KÝ BẰNG GEMINI (CÓ BỘ ĐẾM TIMEOUT CHỐNG XOAY TREO)
         async function analyzeJournalWithAI(e) {
             const text = document.getElementById('journalInput').value.trim();
             const feedback = document.getElementById('aiFeedback');
@@ -1000,25 +996,32 @@
             }
 
             const btn = (e && e.currentTarget) ? e.currentTarget : document.querySelector('#view-journal button');
-            let originalText = "";
+            let originalText = btn ? btn.innerHTML : "";
+
             if (btn) {
-                originalText = btn.innerHTML;
                 btn.disabled = true;
                 btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Gemini đang đọc hiểu bài viết...</span>`;
                 if (window.lucide) lucide.createIcons();
             }
 
+            // Tự động ngắt request nếu quá 10 giây để tránh treo
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+
             try {
                 const response = await fetch('/api/gemini', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    signal: controller.signal,
                     body: JSON.stringify({
                         type: 'analyze_journal',
                         journalText: text
                     })
                 });
 
+                clearTimeout(timeoutId);
                 const data = await response.json();
+
                 if (!response.ok) {
                     throw new Error(data.error || `Lỗi máy chủ (${response.status})`);
                 }
@@ -1027,7 +1030,7 @@
                 feedback.innerHTML = `
                     <div class="flex items-center gap-2 font-bold text-indigo-800">
                         <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
-                        <span>Đánh Giá Từ Gemini 1.5 Flash:</span>
+                        <span>Đánh Giá Từ Gemini AI:</span>
                     </div>
                     <p class="mt-2">• <b>Tỷ lệ đan ngữ ước tính:</b> ${data.estimatedRatio || 'N/A'} (${data.assessment || 'Đang đánh giá'}).</p>
                     <p class="mt-1">• <b>Khen ngợi:</b> ${data.compliment || 'Bài viết sử dụng từ vựng tốt.'}</p>
@@ -1036,17 +1039,20 @@
                 showToast("Đã phân tích xong nhật ký!");
             } catch (err) {
                 console.error("Lỗi phân tích:", err);
-                showToast("Lỗi phân tích: " + err.message);
+                const isTimeout = err.name === 'AbortError';
+                const errorMsg = isTimeout ? "Quá thời gian phản hồi (Timeout 10s). Máy chủ Google đang bận, bạn thử lại nhé!" : err.message;
+                
+                showToast(errorMsg);
                 feedback.classList.remove('hidden');
                 feedback.innerHTML = `
                     <div class="flex items-center gap-2 font-bold text-rose-700">
                         <i data-lucide="alert-triangle" class="w-4 h-4"></i>
-                        <span>Không thể kết nối với AI Gemini:</span>
+                        <span>Thông báo:</span>
                     </div>
-                    <p class="text-xs text-rose-600 mt-1">${err.message}</p>
-                    <p class="text-[11px] text-slate-500 mt-1">Hãy kiểm tra xem bạn đã thêm GEMINI_API_KEY vào Vercel Environment Variables và Redeploy dự án chưa.</p>
+                    <p class="text-xs text-rose-600 mt-1">${errorMsg}</p>
                 `;
             } finally {
+                clearTimeout(timeoutId);
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = originalText;
