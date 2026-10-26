@@ -989,7 +989,7 @@
             }
         }
 
-        // PHÂN TÍCH NHẬT KÝ BẰNG GEMINI 1.5 FLASH SERVERLESS
+        // PHÂN TÍCH NHẬT KÝ BẰNG GEMINI 1.5 FLASH SERVERLESS (BẮT LỖI CHI TIẾT)
         async function analyzeJournalWithAI(e) {
             const text = document.getElementById('journalInput').value.trim();
             const feedback = document.getElementById('aiFeedback');
@@ -1000,10 +1000,13 @@
             }
 
             const btn = (e && e.currentTarget) ? e.currentTarget : document.querySelector('#view-journal button');
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Gemini đang đọc hiểu bài viết...</span>`;
-            if (window.lucide) lucide.createIcons();
+            let originalText = "";
+            if (btn) {
+                originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Gemini đang đọc hiểu bài viết...</span>`;
+                if (window.lucide) lucide.createIcons();
+            }
 
             try {
                 const response = await fetch('/api/gemini', {
@@ -1016,7 +1019,9 @@
                 });
 
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.error || 'Lỗi phân tích');
+                if (!response.ok) {
+                    throw new Error(data.error || `Lỗi máy chủ (${response.status})`);
+                }
 
                 feedback.classList.remove('hidden');
                 feedback.innerHTML = `
@@ -1024,16 +1029,28 @@
                         <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
                         <span>Đánh Giá Từ Gemini 1.5 Flash:</span>
                     </div>
-                    <p>• <b>Tỷ lệ đan ngữ ước tính:</b> ${data.estimatedRatio} (${data.assessment}).</p>
-                    <p>• <b>Khen ngợi:</b> ${data.compliment}</p>
-                    <p>• <b>Gợi ý nâng cao:</b> ${data.suggestions}</p>
+                    <p class="mt-2">• <b>Tỷ lệ đan ngữ ước tính:</b> ${data.estimatedRatio || 'N/A'} (${data.assessment || 'Đang đánh giá'}).</p>
+                    <p class="mt-1">• <b>Khen ngợi:</b> ${data.compliment || 'Bài viết sử dụng từ vựng tốt.'}</p>
+                    <p class="mt-1">• <b>Gợi ý nâng cao:</b> ${data.suggestions || 'Tiếp tục duy trì thói quen viết hàng ngày!'}</p>
                 `;
                 showToast("Đã phân tích xong nhật ký!");
             } catch (err) {
-                showToast("Lỗi: " + err.message);
+                console.error("Lỗi phân tích:", err);
+                showToast("Lỗi phân tích: " + err.message);
+                feedback.classList.remove('hidden');
+                feedback.innerHTML = `
+                    <div class="flex items-center gap-2 font-bold text-rose-700">
+                        <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                        <span>Không thể kết nối với AI Gemini:</span>
+                    </div>
+                    <p class="text-xs text-rose-600 mt-1">${err.message}</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Hãy kiểm tra xem bạn đã thêm GEMINI_API_KEY vào Vercel Environment Variables và Redeploy dự án chưa.</p>
+                `;
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
                 if (window.lucide) lucide.createIcons();
             }
         }
