@@ -18,28 +18,36 @@ export default async function handler(req, res) {
     let userPrompt = "";
 
     if (type === 'generate_story') {
+      let wordCountGuide = "4 đến 5 từ tiếng Anh cơ bản (~20% EN)";
+      if (level === 'intermediate') {
+        wordCountGuide = "8 đến 10 từ/cụm từ tiếng Anh (~50% EN)";
+      } else if (level === 'advanced') {
+        wordCountGuide = "14 đến 16 từ/cụm từ tiếng Anh (~80% EN)";
+      }
+
       systemPrompt = `Bạn là chuyên gia giảng dạy phương pháp Translanguaging (Đan ngữ Việt - Anh).
-Nhiệm vụ của bạn là tạo một đoạn văn ngắn pha trộn giữa Tiếng Việt và các từ vựng Tiếng Anh then chốt.
+Nhiệm vụ: Tạo một đoạn văn ngắn pha trộn giữa Tiếng Việt và các từ khóa Tiếng Anh then chốt theo đúng cấp độ yêu cầu.
 TUYỆT ĐỐI KHÔNG VIẾT 100% TIẾNG VIỆT HOẶC 100% TIẾNG ANH.
-BẮT BUỘC: Mỗi từ/cụm từ Tiếng Anh trong bài đọc phải được bọc chính xác theo định dạng HTML:
+BẮT BUỘC: Mỗi từ/cụm từ Tiếng Anh trong bài đọc phải bọc theo đúng định dạng HTML:
 <span class='l2-word' onclick='openWordModal("EnglishWord", "/Phonetic/", "Nghĩa tiếng Việt")'>EnglishWord</span>
 
 Ví dụ mẫu chuẩn:
 Hôm nay là chuyến bay đầu tiên của tôi tại <span class='l2-word' onclick='openWordModal("airport", "/ˈeə.pɔːt/", "sân bay")'>airport</span>. Tôi cảm thấy rất <span class='l2-word' onclick='openWordModal("excited", "/ɪkˈsaɪ.tɪd/", "háo hức")'>excited</span> khi bước lên máy bay. Sau khi <span class='l2-word' onclick='openWordModal("take off", "/ˈteɪk.ɒf/", "cất cánh")'>take off</span>, tôi nhìn qua <span class='l2-word' onclick='openWordModal("window", "/ˈwɪn.dəʊ/", "cửa sổ")'>window</span> và thấy bầu trời trong xanh.
 
-Phản hồi bắt buộc chỉ là 1 chuỗi JSON thuần túy (không dùng block \`\`\`json):
+Cấu trúc JSON phản hồi bắt buộc (không bọc trong \`\`\`json):
 {
-  "title": "Tiêu đề bài học ngắn gọn",
-  "category": "Chủ đề",
-  "content": "Đoạn văn đan ngữ chứa từ tiếng Anh bọc trong thẻ span l2-word như mẫu trên",
-  "fullTranslation": "Toàn bộ bài đọc được dịch hoàn toàn sang Tiếng Việt chuẩn"
+  "title": "Tiêu đề bài học",
+  "category": "Cấp độ",
+  "content": "Nội dung đoạn văn có chứa các thẻ span",
+  "fullTranslation": "Toàn bộ bài đọc được dịch sang Tiếng Việt"
 }`;
 
-      userPrompt = `Tạo bài đọc Translanguaging với:
-- Chủ đề: "${topic || 'Chuyến bay đầu tiên'}"
-- Cấp độ: "${level || 'beginner'}" (yêu cầu chèn từ 4 đến 6 từ tiếng Anh phù hợp bọc trong thẻ span).
-- Độ dài: khoảng 60-80 từ.
-Hãy đảm bảo các từ tiếng Anh xuất hiện tự nhiên và đúng định dạng yêu cầu.`;
+      userPrompt = `Tạo bài đọc Translanguaging:
+- Chủ đề: "${topic || 'Đời sống sinh viên'}"
+- Cấp độ yêu cầu: "${level || 'beginner'}"
+- Ràng buộc mật độ từ vựng: BẮT BUỘC chèn đúng ${wordCountGuide}.
+- Độ dài đoạn văn: khoảng 60-90 từ.
+- Định dạng: Chỉ trả về chuỗi JSON thuần túy, không có thẻ markdown.`;
 
     } else if (type === 'analyze_journal') {
       systemPrompt = "Bạn là chuyên gia thẩm định Translanguaging (Code-switching Việt - Anh). Phản hồi bắt buộc ở định dạng JSON thuần túy, tuyệt đối không dùng thẻ markdown ```json.";
@@ -75,8 +83,8 @@ Cấu trúc JSON bắt buộc:
           { role: "user", content: userPrompt }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.6,
-        max_tokens: 800
+        temperature: 0.5,
+        max_tokens: 900
       })
     });
 
