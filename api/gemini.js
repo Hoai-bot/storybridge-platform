@@ -1,6 +1,5 @@
 // api/gemini.js - Vercel Serverless Function
 export default async function handler(req, res) {
-  // Chỉ chấp nhận POST request
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Phương thức không hợp lệ' });
   }
@@ -64,31 +63,48 @@ Trả về DUY NHẤT một chuỗi JSON hợp lệ (không kèm Markdown codebl
       return res.status(400).json({ error: 'Loại tác vụ không hợp lệ' });
     }
 
-    // Endpoint cập nhật sử dụng gemini-3.8-flash
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
-    
-    const response = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.7,
-          responseMimeType: "application/json"
+    // Danh sách model ưu tiên: Nếu model đầu bị nghẽn (high demand), tự động thử model kế tiếp
+    const candidateModels = ['gemini-3.8-flash', 'gemini-2.5-flash'];
+    let lastError = null;
+
+    for (const modelName of candidateModels) {
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+      try {
+        const response = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.7,
+              responseMimeType: "application/json"
+            }
+          })
+        });
+
+        const data = await response.json();
+
+        // Nếu máy chủ báo quá tải (503 / high demand), tiếp tục vòng lặp thử model dự phòng
+        if (!response.ok) {
+          lastError = data.error?.message || `Lỗi máy chủ (${response.status})`;
+          if (response.status === 503 || lastError.includes('high demand') || lastError.includes('overloaded')) {
+            continue;
+          }
+          return res.status(response.status).json({ error: lastError });
         }
-      })
-    });
 
-    const data = await response.json();
+        const rawResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        const parsedData = JSON.parse(rawResult);
+        return res.status(200).json(parsedData);
 
-    if (!response.ok) {
-      return res.status(response.status).json({ error: data.error?.message || 'Lỗi từ Gemini API' });
+      } catch (err) {
+        lastError = err.message;
+      }
     }
 
-    const rawResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    const parsedData = JSON.parse(rawResult);
+    return res.status(503).json({ error: `Máy chủ AI đang quá tải tạm thời: ${lastError}. Bạn hãy thử lại sau ít giây nhé!` });
 
-    return res.status(200).json(parsedData);
   } catch (err) {
     return res.status(500).json({ error: 'Không thể xử lý nội dung: ' + err.message });
   }
