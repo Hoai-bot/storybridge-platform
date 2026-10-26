@@ -218,7 +218,7 @@
             </div>
         </section>
 
-        <!-- TAB 3: SMART STORY BUILDER (GEMINI SERVERLESS) -->
+        <!-- TAB 3: SMART STORY BUILDER (GROQ SERVERLESS) -->
         <section id="view-builder" class="hidden space-y-6">
             <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
                 <div>
@@ -226,9 +226,9 @@
                         <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
                             <i data-lucide="sparkles" class="w-5 h-5"></i>
                         </div>
-                        <h2 class="text-xl font-bold text-slate-900">Trình Tạo Bài Học Thông Minh (Gemini AI)</h2>
+                        <h2 class="text-xl font-bold text-slate-900">Trình Tạo Bài Học Thông Minh (Groq AI)</h2>
                     </div>
-                    <p class="text-xs text-slate-500 mt-1">Nhập bất kỳ ý tưởng hoặc chọn chủ đề mẫu. Gemini sẽ tự động sinh bài đọc đan ngữ với từ vựng IPA tương ứng theo đúng cấp độ!</p>
+                    <p class="text-xs text-slate-500 mt-1">Nhập bất kỳ ý tưởng hoặc chọn chủ đề mẫu. AI sẽ tự động sinh bài đọc đan ngữ với từ vựng IPA tương ứng theo đúng cấp độ!</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -291,7 +291,7 @@
             </div>
         </section>
 
-        <!-- TAB 4: JOURNAL & AI ASSIST (GEMINI SERVERLESS) -->
+        <!-- TAB 4: JOURNAL & AI ASSIST (GROQ SERVERLESS) -->
         <section id="view-journal" class="hidden space-y-6">
             <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
                 <div class="flex items-center gap-2">
@@ -648,7 +648,7 @@
             }
         }
 
-        // TẠO BÀI HỌC BẰNG GEMINI SERVERLESS
+        // TẠO BÀI HỌC BẰNG GROQ SERVERLESS
         async function generateCustomStory(e) {
             const topicInput = document.getElementById('builderTopicInput').value.trim();
             const level = document.querySelector('input[name="builderLevel"]:checked').value;
@@ -656,11 +656,11 @@
 
             const originalText = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Gemini đang sáng tạo bài học...</span>`;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>AI đang sáng tạo bài học...</span>`;
             if (window.lucide) lucide.createIcons();
 
             try {
-                const response = await fetch('/api/gemini', {
+                const response = await fetch('/api/groq', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -670,12 +670,19 @@
                     })
                 });
 
-                const data = await response.json();
+                const responseText = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch {
+                    throw new Error(responseText.slice(0, 150) || `Lỗi máy chủ (${response.status})`);
+                }
+
                 if (!response.ok) throw new Error(data.error || 'Lỗi tạo bài');
 
                 const newStoryObj = {
                     id: "ai_" + Date.now(),
-                    title: data.title + " (Gemini AI)",
+                    title: data.title + " (Groq AI)",
                     category: "⚡ " + data.category,
                     content: data.content,
                     fullTranslation: data.fullTranslation
@@ -694,7 +701,7 @@
                 StoryBridgeApp.state.currentStoryIndex = 0;
                 renderStoryList();
 
-                showToast("Gemini đã tạo xong bài học!");
+                showToast("Groq AI đã tạo xong bài học!");
             } catch (err) {
                 showToast("Lỗi: " + err.message);
             } finally {
@@ -954,7 +961,7 @@
             }
         }
 
-        // PHÂN TÍCH NHẬT KÝ BẰNG GEMINI
+        // PHÂN TÍCH NHẬT KÝ BẰNG GROQ
         async function analyzeJournalWithAI(e) {
             const text = document.getElementById('journalInput').value.trim();
             const feedback = document.getElementById('aiFeedback');
@@ -969,7 +976,7 @@
 
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Gemini đang đọc hiểu bài viết...</span>`;
+                btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>AI đang đọc hiểu bài viết...</span>`;
                 if (window.lucide) lucide.createIcons();
             }
 
@@ -977,7 +984,7 @@
             const timeoutId = setTimeout(() => controller.abort(), 45000);
 
             try {
-                const response = await fetch('/api/gemini', {
+                const response = await fetch('/api/groq', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     signal: controller.signal,
@@ -1006,7 +1013,7 @@
                 feedback.innerHTML = `
                     <div class="flex items-center gap-2 font-bold text-indigo-800">
                         <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
-                        <span>Đánh Giá Từ Gemini AI:</span>
+                        <span>Đánh Giá Từ Groq AI:</span>
                     </div>
                     <p class="mt-2">• <b>Tỷ lệ đan ngữ ước tính:</b> ${data.estimatedRatio || 'N/A'} (${data.assessment || 'Đang đánh giá'}).</p>
                     <p class="mt-1">• <b>Khen ngợi:</b> ${data.compliment || 'Bài viết sử dụng từ vựng tốt.'}</p>
@@ -1016,7 +1023,7 @@
             } catch (err) {
                 console.error("Lỗi phân tích:", err);
                 const isTimeout = err.name === 'AbortError';
-                const errorMsg = isTimeout ? "Quá thời gian phản hồi (Timeout 45s). Máy chủ Google đang bận, bạn thử lại nhé!" : err.message;
+                const errorMsg = isTimeout ? "Quá thời gian phản hồi (Timeout 45s). Vui lòng thử lại!" : err.message;
                 
                 showToast(errorMsg);
                 feedback.classList.remove('hidden');
